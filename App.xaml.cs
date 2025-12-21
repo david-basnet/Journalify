@@ -9,6 +9,18 @@ public partial class App : Application
 
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
-		return new Window(new MainPage()) { Title = "MauiApp1" };
+		var window = new Window(new MainPage()) 
+		{ 
+			Title = "Journal App"
+		};
+
+		// Set to maximize on Windows by using screen dimensions
+		#if WINDOWS
+		var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
+		window.Width = displayInfo.Width / displayInfo.Density;
+		window.Height = displayInfo.Height / displayInfo.Density;
+		#endif
+
+		return window;
 	}
 }

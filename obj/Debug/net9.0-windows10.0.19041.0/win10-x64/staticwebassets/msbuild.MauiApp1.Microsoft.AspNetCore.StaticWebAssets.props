@@ -72,12 +72,12 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>kmeqsx4zfn</Fingerprint>
-      <Integrity>jIwJDSmI/Wd5ysrYSI3bWPh3SOuOGeRZcSBuxMeCuso=</Integrity>
+      <Fingerprint>t7ocoxaz5o</Fingerprint>
+      <Integrity>Z17ySDPAnaLGZDif5TG0LPu1VyZDkvmxdt0v/gnkDoA=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>849</FileLength>
-      <LastWriteTime>Sun, 21 Dec 2025 06:23:27 GMT</LastWriteTime>
+      <FileLength>961</FileLength>
+      <LastWriteTime>Sun, 21 Dec 2025 06:49:06 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauiApp1.styles.css'))">
