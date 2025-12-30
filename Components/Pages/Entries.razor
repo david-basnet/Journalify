@@ -1,0 +1,287 @@
+@page "/entries"
+@inject JournalDatabase journalDb
+@inject NavigationManager Nav
+
+<h4><i class="fas fa-list"></i> All Entries</h4>
+
+<div class="search-filter-group">
+    <div class="form-group">
+        <input type="text" @bind="searchTerm" @oninput="HandleSearch" class="form-control" placeholder="Search entries by content..." />
+    </div>
+
+    <div class="filter-row">
+    <div class="form-group">
+        <label>Filter by Mood:</label>
+        <select @bind="filterMood" @bind:event="oninput" class="form-control">
+            <option value="">-- All Moods --</option>
+            @foreach (var mood in allMoods)
+            {
+                <option value="@mood">@mood</option>
+            }
+        </select>
+        </div>
+
+        <div class="form-group">
+            <label>Filter by Tag:</label>
+            <select @bind="filterTag" @bind:event="oninput" class="form-control">
+                <option value="">-- All Tags --</option>
+                @foreach (var tag in availableTags)
+                {
+                    <option value="@tag">@tag</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="date-range-filter">
+        <div class="form-group">
+            <label>Date Range:</label>
+            <div class="date-inputs">
+                <div>
+                    <label class="date-label">From:</label>
+                    <input type="date" @bind="startDate" @bind:event="onchange" class="form-control" />
+                </div>
+                <div>
+                    <label class="date-label">To:</label>
+                    <input type="date" @bind="endDate" @bind:event="onchange" class="form-control" />
+                </div>
+                <button @onclick="ClearDateFilter" class="btn btn-sm btn-outline-secondary" title="Clear date filter">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <button @onclick="LoadEntries" class="btn btn-outline-primary" style="width: 100%; margin-top: 10px;">
+        <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+</div>
+
+@if (filteredEntries == null || filteredEntries.Count == 0)
+{
+    <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <p>No entries found.</p>
+    </div>
+}
+else
+{
+    <div class="entries-list">
+        <p style="color: #666; font-size: 14px;">Showing @filteredEntries.Count entry(ies)</p>
+        @foreach (var entry in filteredEntries)
+        {
+            <div class="entry-card">
+                <div class="entry-header">
+                    <div class="entry-date">
+                        <i class="fas fa-calendar"></i> @entry.EntryDate.ToString("ddd, MMM dd, yyyy")
+                    </div>
+                    <div class="entry-moods">
+                        <span class="mood-badge" style="background-color: @GetMoodColor(entry.PrimaryMood); color: white;">
+                            <i class="fas @GetMoodIcon(entry.PrimaryMood)"></i> @entry.PrimaryMood
+                        </span>
+                        @if (!string.IsNullOrEmpty(entry.SecondaryMood1))
+                        {
+                            <span class="mood-badge secondary" style="background-color: @GetMoodColor(entry.SecondaryMood1); color: white;">
+                                <i class="fas @GetMoodIcon(entry.SecondaryMood1)"></i> @entry.SecondaryMood1
+                            </span>
+                        }
+                        @if (!string.IsNullOrEmpty(entry.SecondaryMood2))
+                        {
+                            <span class="mood-badge secondary" style="background-color: @GetMoodColor(entry.SecondaryMood2); color: white;">
+                                <i class="fas @GetMoodIcon(entry.SecondaryMood2)"></i> @entry.SecondaryMood2
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(entry.Category))
+                {
+                    <div class="entry-category">
+                        <i class="fas fa-tag"></i> @entry.Category
+                    </div>
+                }
+
+                <div class="entry-content">
+                    @((MarkupString)((entry.Content?.Length ?? 0) > 150 ? (entry.Content ?? "").Substring(0, 150) + "..." : (entry.Content ?? "")))
+                </div>
+
+                @if (!string.IsNullOrEmpty(entry.Tags))
+                {
+                    <div class="entry-tags">
+                        @foreach (var tag in entry.Tags.Split(',', System.StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            <span class="tag">@tag.Trim()</span>
+                        }
+                    </div>
+                }
+
+                <div class="entry-footer">
+                    <small>Created: @entry.CreatedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                    @if (entry.CreatedAt != entry.UpdatedAt)
+                    {
+                        <small style="margin-left: 20px;">Updated: @entry.UpdatedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                    }
+                </div>
+
+                <div class="entry-actions">
+                    <button @onclick="() => EditEntry(entry.Id)" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button @onclick="() => DeleteEntry(entry.Id)" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<string> allMoods = new();
+    private List<string> availableTags = new();
+    private List<JournalEntry> allEntries = new();
+    private List<JournalEntry> filteredEntries = new();
+    private string searchTerm = "";
+    private string filterMood = "";
+    private string filterTag = "";
+    private DateTime? startDate = null;
+    private DateTime? endDate = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        allMoods.AddRange(MoodCategories.PositiveMoods);
+        allMoods.AddRange(MoodCategories.NeutralMoods);
+        allMoods.AddRange(MoodCategories.NegativeMoods);
+        allMoods.Sort();
+
+        await LoadEntries();
+    }
+
+    private async Task LoadEntries()
+    {
+        allEntries = await journalDb.GetAllEntriesAsync();
+        
+        // Extract all unique tags
+        availableTags = allEntries
+            .SelectMany(e => (e.Tags ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
+            .Select(t => t.Trim().TrimStart('#'))
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Distinct()
+            .OrderBy(t => t)
+            .ToList();
+        
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        filteredEntries = allEntries;
+        
+        // Date range filter
+        if (startDate.HasValue || endDate.HasValue)
+        {
+            filteredEntries = filteredEntries.Where(e =>
+            {
+                var entryDate = e.EntryDate.Date;
+                bool matchesStart = !startDate.HasValue || entryDate >= startDate.Value.Date;
+                bool matchesEnd = !endDate.HasValue || entryDate <= endDate.Value.Date;
+                return matchesStart && matchesEnd;
+            }).ToList();
+        }
+        
+        // Search filter
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredEntries = filteredEntries
+                .Where(e => (e.Content != null && e.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                           (e.Category != null && e.Category.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                           (e.Tags != null && e.Tags.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+        }
+
+        // Mood filter
+        if (!string.IsNullOrWhiteSpace(filterMood))
+        {
+            filteredEntries = filteredEntries
+                .Where(e => e.PrimaryMood == filterMood || e.SecondaryMood1 == filterMood || e.SecondaryMood2 == filterMood)
+                .ToList();
+        }
+        
+        // Tag filter
+        if (!string.IsNullOrWhiteSpace(filterTag))
+        {
+            filteredEntries = filteredEntries
+                .Where(e => e.Tags != null && e.Tags.Contains(filterTag, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+    
+    private void ClearDateFilter()
+    {
+        startDate = null;
+        endDate = null;
+        ApplyFilters();
+    }
+
+    private void HandleSearch(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private async Task DeleteEntry(int entryId)
+    {
+        if (await ConfirmDelete())
+        {
+            await journalDb.DeleteEntryByIdAsync(entryId);
+            await LoadEntries();
+        }
+    }
+
+    private void EditEntry(int id)
+    {
+        Nav.NavigateTo($"/new-entry/{id}");
+    }
+
+    private Task<bool> ConfirmDelete() => Task.FromResult(true);
+
+    private string GetMoodIcon(string? mood) => (mood ?? string.Empty) switch
+    {
+        "Happy" => "fa-face-smile",
+        "Excited" => "fa-face-grin-stars",
+        "Grateful" => "fa-hands-praying",
+        "Hopeful" => "fa-sun",
+        "Peaceful" => "fa-spa",
+        "Energetic" => "fa-bolt",
+        "Inspired" => "fa-lightbulb",
+        "Loved" => "fa-heart",
+        "Calm" => "fa-droplet",
+        "Neutral" => "fa-face-meh",
+        "Curious" => "fa-magnifying-glass",
+        "Focused" => "fa-crosshairs",
+        "Determined" => "fa-fist-raised",
+        "Patient" => "fa-hourglass-end",
+        "Sad" => "fa-face-frown",
+        "Angry" => "fa-face-angry",
+        "Frustrated" => "fa-face-frustrated",
+        "Anxious" => "fa-head-side-virus",
+        "Tired" => "fa-battery-quarter",
+        "Confused" => "fa-brain",
+        "Disappointed" => "fa-thumbs-down",
+        "Stressed" => "fa-face-worried",
+        _ => "fa-circle"
+    };
+
+    private string GetMoodColor(string? mood)
+    {
+        if (string.IsNullOrEmpty(mood)) return "#007bff";
+        var category = MoodCategories.GetMoodCategory(mood);
+        return category switch
+        {
+            "Positive" => "#28a745",
+            "Neutral" => "#6c757d",
+            "Negative" => "#dc3545",
+            _ => "#007bff"
+        };
+    }
+}

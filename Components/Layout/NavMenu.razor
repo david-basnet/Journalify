@@ -12,8 +12,32 @@
     <nav class="flex-column nav-custom">
         <div class="nav-item px-3 nav-item-custom">
             <NavLink class="nav-link nav-link-custom" href="" Match="NavLinkMatch.All">
-                <span class="nav-icon"><i class="fas fa-home"></i></span>
-                <span class="nav-text">Home</span>
+                <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+                <span class="nav-text">Dashboard</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3 nav-item-custom">
+            <NavLink class="nav-link nav-link-custom" href="new-entry">
+                <span class="nav-icon"><i class="fas fa-pen-nib"></i></span>
+                <span class="nav-text">New Entry</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3 nav-item-custom">
+            <NavLink class="nav-link nav-link-custom" href="entries">
+                <span class="nav-icon"><i class="fas fa-list-check"></i></span>
+                <span class="nav-text">Entries</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3 nav-item-custom">
+                <NavLink class="nav-link nav-link-custom" href="calendar">
+                    <span class="nav-icon"><i class="fas fa-calendar-alt"></i></span>
+                    <span class="nav-text">Calendar</span>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3 nav-item-custom">
+            <NavLink class="nav-link nav-link-custom" href="weather">
+                <span class="nav-icon"><i class="fas fa-cloud"></i></span>
+                <span class="nav-text">Weather</span>
             </NavLink>
         </div>
     </nav>
@@ -24,6 +48,19 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         border-bottom: 3px solid #764ba2;
+    }
+
+    /* Ensure light mode navbar styles are explicit */
+    :not(.theme-dark) .navbar-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        border-bottom: 3px solid #764ba2;
+    }
+
+    .theme-dark .navbar-custom {
+        background: linear-gradient(135deg, #4f6ee6 0%, #6b4aa0 100%);
+        box-shadow: 0 4px 15px rgba(79, 110, 230, 0.3);
+        border-bottom: 3px solid #6b4aa0;
     }
 
     .navbar-brand-custom {
@@ -48,6 +85,17 @@
         border-right: 2px solid #667eea;
     }
 
+    /* Ensure light mode styles are explicit */
+    :not(.theme-dark) .nav-scrollable-custom {
+        background: linear-gradient(180deg, #f5f7fa 0%, #e9ecef 100%);
+        border-right: 2px solid #667eea;
+    }
+
+    .theme-dark .nav-scrollable-custom {
+        background: linear-gradient(180deg, #0b1220 0%, #0f1720 100%);
+        border-right: 2px solid #4f6ee6;
+    }
+
     .nav-custom {
         padding: 20px 0;
     }
@@ -63,8 +111,19 @@
         background-color: rgba(102, 126, 234, 0.08);
     }
 
+    /* Ensure light mode hover styles are explicit */
+    :not(.theme-dark) .nav-item-custom:hover {
+        border-left-color: #667eea;
+        background-color: rgba(102, 126, 234, 0.08);
+    }
+
+    .theme-dark .nav-item-custom:hover {
+        border-left-color: #4f6ee6;
+        background-color: rgba(79, 110, 230, 0.15);
+    }
+
     .nav-link-custom {
-        color: #333;
+        color: #000000;
         font-weight: 600;
         display: flex;
         align-items: center;
@@ -74,9 +133,49 @@
         transition: all 0.3s ease;
     }
 
+    /* Ensure light mode link styles are explicit - black text */
+    :not(.theme-dark) .nav-link-custom {
+        color: #000000 !important;
+    }
+
+    :not(.theme-dark) .nav-link-custom .nav-icon,
+    :not(.theme-dark) .nav-link-custom .nav-text {
+        color: #000000 !important;
+    }
+
+    .theme-dark .nav-link-custom {
+        color: #ffffff;
+    }
+
+    .theme-dark .nav-link-custom .nav-icon,
+    .theme-dark .nav-link-custom .nav-text {
+        color: #ffffff;
+    }
+
     .nav-link-custom:hover {
         color: #667eea;
         background-color: rgba(102, 126, 234, 0.1);
+    }
+
+    /* Ensure light mode hover styles are explicit */
+    :not(.theme-dark) .nav-link-custom:hover {
+        color: #667eea !important;
+        background-color: rgba(102, 126, 234, 0.1);
+    }
+
+    :not(.theme-dark) .nav-link-custom:hover .nav-icon,
+    :not(.theme-dark) .nav-link-custom:hover .nav-text {
+        color: #667eea !important;
+    }
+
+    .theme-dark .nav-link-custom:hover {
+        color: #ffffff;
+        background-color: rgba(79, 110, 230, 0.2);
+    }
+
+    .theme-dark .nav-link-custom:hover .nav-icon,
+    .theme-dark .nav-link-custom:hover .nav-text {
+        color: #ffffff;
     }
 
     .nav-link-custom.active {
@@ -86,6 +185,18 @@
         box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
+    /* Ensure light mode active styles are explicit */
+    :not(.theme-dark) .nav-link-custom.active {
+        color: #fff;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .theme-dark .nav-link-custom.active {
+        background: linear-gradient(90deg, #4f6ee6 0%, #6b4aa0 100%);
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
     .nav-icon {
         font-size: 1.2rem;
         width: 24px;
@@ -93,9 +204,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        color: inherit;
     }
 
     .nav-text {
         letter-spacing: 0.3px;
+        color: inherit;
     }
 </style>

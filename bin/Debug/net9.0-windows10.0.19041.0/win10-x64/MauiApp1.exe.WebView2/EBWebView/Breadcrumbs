@@ -1,6 +1,5 @@
-0:03:00 Memory Pressure: Moderate
-0:03:15 Memory Pressure: Moderate
-0:03:25 Microsoft.UnloadController.IsUnclosableApp_IsNotWebApp
+0:01:45 Memory Pressure: Moderate
+0:01:50 Microsoft.UnloadController.IsUnclosableApp_IsNotWebApp
 0:00:00 Startup
 0:00:00 Microsoft.DeleteProfileHelper.CleanUpEphemeralProfiles
 0:00:00 Microsoft.DeleteProfileHelper.CleanUpDeletedProfiles
@@ -11,26 +10,42 @@
 0:00:00 Tab1 FinishNav1
 0:00:00 Tab1 PageLoad
 0:00:00 Tab1 StartNav2 #typed
-0:00:00 Tab1 FinishNav2
-0:00:00 Tab1 PageLoad
+0:00:01 Tab1 FinishNav2
+0:00:01 Tab1 PageLoad
 0:00:04 Memory Pressure: Moderate
+0:00:06 Tab1 StartNav3 #renderer-user #link
+0:00:06 Tab1 FinishNav3
+0:00:07 Tab1 StartNav4 #renderer-user #link
+0:00:07 Tab1 FinishNav4
+0:00:08 Tab1 StartNav5 #renderer-user #link
+0:00:08 Tab1 FinishNav5
+0:00:09 Tab1 StartNav6 #renderer-user #link
+0:00:09 Tab1 FinishNav6
+0:00:11 Tab1 StartNav7 #renderer-user #link
+0:00:11 Tab1 FinishNav7
 0:00:14 Memory Pressure: Moderate
 0:00:25 Memory Pressure: Moderate
 0:00:35 Memory Pressure: Moderate
-0:00:45 Widget Closed: 
-0:00:54 ZoomMinus
-0:00:54 ZoomMinus
-0:00:54 ZoomMinus
+0:00:45 Memory Pressure: Moderate
 0:00:55 Memory Pressure: Moderate
-0:00:56 ZoomMinus
 0:01:05 Memory Pressure: Moderate
-0:01:05 ZoomPlus
-0:01:05 ZoomPlus
-0:01:05 ZoomPlus
-0:01:05 ZoomPlus
-0:01:05 ZoomPlus
-0:01:06 ZoomMinus
-0:01:07 Microsoft.UnloadController.IsUnclosableApp_IsNotWebApp
+0:01:15 Memory Pressure: Moderate
+0:01:25 Memory Pressure: Moderate
+0:01:35 Memory Pressure: Moderate
+0:01:50 Memory Pressure: Moderate
+0:02:00 Memory Pressure: Moderate
+0:02:10 Memory Pressure: Moderate
+0:02:20 Memory Pressure: Moderate
+0:02:30 Memory Pressure: Moderate
+0:02:40 Memory Pressure: Moderate
+0:02:50 Memory Pressure: Moderate
+0:03:05 Memory Pressure: Moderate
+0:03:40 Memory Pressure: Moderate
+0:03:50 Memory Pressure: Moderate
+0:04:00 Memory Pressure: Moderate
+0:04:10 Memory Pressure: Moderate
+0:04:20 Memory Pressure: Moderate
+0:04:21 Microsoft.UnloadController.IsUnclosableApp_IsNotWebApp
 0:00:00 Startup
 0:00:00 Microsoft.DeleteProfileHelper.CleanUpEphemeralProfiles
 0:00:00 Microsoft.DeleteProfileHelper.CleanUpDeletedProfiles
@@ -44,95 +59,71 @@
 0:00:00 Tab1 FinishNav2
 0:00:00 Tab1 PageLoad
 0:00:04 Memory Pressure: Moderate
-0:00:14 Memory Pressure: Moderate
+0:00:08 Tab1 StartNav3 #renderer-user #link
+0:00:08 Tab1 FinishNav3
+0:00:15 Memory Pressure: Moderate
 0:00:25 Memory Pressure: Moderate
+0:00:31 Tab1 StartNav4 #renderer-user #link
+0:00:31 Tab1 FinishNav4
 0:00:35 Memory Pressure: Moderate
-0:00:37 Widget Closed: 
-0:00:38 Widget Closed: 
-0:00:40 Widget Closed: 
+0:00:39 Memory Pressure: Critical
+0:00:45 Memory Pressure: Critical
 0:00:55 Memory Pressure: Moderate
-0:01:02 Memory Pressure: Critical
-0:01:05 Memory Pressure: Critical
-0:01:15 Memory Pressure: Critical
-0:01:25 Memory Pressure: Critical
-0:01:35 Memory Pressure: Critical
-0:01:45 Memory Pressure: Critical
-0:01:55 Memory Pressure: Critical
-0:03:30 Memory Pressure: Critical
-0:05:05 Memory Pressure: Critical
-0:05:15 Memory Pressure: Critical
+0:01:05 Memory Pressure: Moderate
+0:01:15 Memory Pressure: Moderate
+0:01:25 Memory Pressure: Moderate
+0:01:35 Memory Pressure: Moderate
+0:01:45 Memory Pressure: Moderate
+0:02:00 Memory Pressure: Moderate
+0:02:11 Tab1 StartNav5 #renderer-user #link
+0:02:11 Tab1 FinishNav5
+0:02:14 Tab1 StartNav6 #renderer-user #link
+0:02:14 Tab1 FinishNav6
+0:02:15 Tab1 StartNav7 #renderer-user #link
+0:02:15 Tab1 FinishNav7
+0:02:21 Tab1 StartNav8 #renderer-user #link
+0:02:21 Tab1 FinishNav8
+0:02:24 Tab1 StartNav9 #renderer-user #link
+0:02:24 Tab1 FinishNav9
+0:02:25 Memory Pressure: Moderate
+0:02:27 Memory Pressure: Critical
+0:02:45 Memory Pressure: Critical
+0:02:55 Memory Pressure: Critical
+0:03:05 Memory Pressure: Critical
+0:03:15 Memory Pressure: Critical
+0:03:25 Memory Pressure: Critical
+0:03:35 Memory Pressure: Critical
+0:03:45 Memory Pressure: Critical
+0:03:55 Memory Pressure: Critical
+0:04:05 Memory Pressure: Critical
+0:05:00 Memory Pressure: Critical
 0:05:25 Memory Pressure: Critical
-0:05:35 Memory Pressure: Critical
-0:05:45 Memory Pressure: Critical
-0:05:55 Memory Pressure: Critical
-0:06:05 Memory Pressure: Critical
-0:06:15 Memory Pressure: Critical
-0:06:25 Memory Pressure: Critical
-0:06:35 Memory Pressure: Critical
-0:06:45 Memory Pressure: Critical
-0:06:55 Memory Pressure: Critical
-0:07:10 Memory Pressure: Critical
-0:07:20 Memory Pressure: Critical
-0:07:30 Memory Pressure: Critical
-0:07:40 Memory Pressure: Critical
-0:07:50 Memory Pressure: Critical
-0:08:00 Memory Pressure: Critical
-0:08:20 Memory Pressure: Critical
+0:05:50 Memory Pressure: Critical
+0:06:00 Memory Pressure: Critical
+0:06:10 Memory Pressure: Critical
 0:08:30 Memory Pressure: Critical
 0:08:40 Memory Pressure: Critical
-0:08:50 Memory Pressure: Critical
-0:09:00 Memory Pressure: Critical
+0:08:45 Memory Pressure: Critical
+0:08:55 Memory Pressure: Critical
 0:09:10 Memory Pressure: Critical
-0:10:35 Memory Pressure: Critical
-0:11:00 Memory Pressure: Critical
-0:11:11 Memory Pressure: Moderate
-0:11:12 Microsoft.UnloadController.IsUnclosableApp_IsNotWebApp
-0:00:00 Startup
-0:00:00 Microsoft.DeleteProfileHelper.CleanUpEphemeralProfiles
-0:00:00 Microsoft.DeleteProfileHelper.CleanUpDeletedProfiles
-0:00:00 Microsoft.NewBrowser_Popup
-0:00:00 Microsoft.BrowserList.AddBrowser
-0:00:00 Browser1 Insert active Tab1 at 0
-0:00:00 Tab1 StartNav1 #auto_toplevel
-0:00:00 Tab1 FinishNav1
-0:00:00 Tab1 PageLoad
-0:00:00 Tab1 StartNav2 #typed
-0:00:00 Tab1 FinishNav2
-0:00:00 Tab1 PageLoad
-0:00:05 Memory Pressure: Moderate
-0:00:10 Widget Closed: 
-0:00:13 ZoomMinus
-0:00:13 ZoomMinus
-0:00:13 ZoomMinus
-0:00:15 ZoomMinus
-0:00:15 ZoomMinus
-0:00:20 Memory Pressure: Moderate
-0:00:30 Memory Pressure: Moderate
-0:00:40 Memory Pressure: Moderate
-0:00:50 Memory Pressure: Moderate
-0:00:54 ZoomPlus
-0:00:54 ZoomPlus
-0:00:54 ZoomPlus
-0:00:54 ZoomPlus
-0:00:54 ZoomPlus
-0:00:56 ZoomMinus
-0:01:00 Memory Pressure: Moderate
-0:01:07 Widget Closed: 
-0:01:09 Widget Closed: 
-0:01:10 Memory Pressure: Moderate
-0:01:10 Widget Closed: 
-0:01:20 Memory Pressure: Moderate
-0:01:24 ZoomMinus
-0:01:24 ZoomMinus
-0:01:45 Memory Pressure: Moderate
-0:03:00 Memory Pressure: Moderate
-0:03:59 ZoomMinus
-0:03:59 ZoomMinus
-0:03:59 ZoomMinus
-0:04:00 ZoomPlus
-0:04:00 ZoomPlus
-0:04:04 ZoomMinus
-0:04:04 ZoomMinus
-0:04:04 ZoomPlus
-0:05:05 Memory Pressure: Moderate
-0:05:07 Microsoft.UnloadController.IsUnclosableApp_IsNotWebApp
+0:09:20 Memory Pressure: Critical
+0:09:30 Memory Pressure: Critical
+0:09:40 Memory Pressure: Critical
+0:09:50 Memory Pressure: Critical
+0:09:54 Tab1 StartNav10 #renderer-user #link
+0:09:54 Tab1 FinishNav10
+0:09:55 Tab1 StartNav11 #renderer-user #link
+0:09:55 Tab1 FinishNav11
+0:10:00 Memory Pressure: Moderate
+0:10:10 Memory Pressure: Moderate
+0:11:10 Tab1 StartNav12 #renderer-user #link
+0:11:10 Tab1 FinishNav12
+0:11:15 Tab1 StartNav13 #renderer-user #link
+0:11:15 Tab1 FinishNav13
+0:11:18 Tab1 StartNav14 #renderer-user #link
+0:11:18 Tab1 FinishNav14
+0:11:21 Tab1 StartNav15 #renderer-user #link
+0:11:21 Tab1 FinishNav15
+0:11:22 Tab1 StartNav16 #renderer-user #link
+0:11:22 Tab1 FinishNav16
+0:11:27 Microsoft.UnloadController.IsUnclosableApp_IsNotWebApp

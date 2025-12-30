@@ -153,6 +153,91 @@ public class JournalDatabase
             NewestEntry = entries.FirstOrDefault()?.EntryDate
         };
     }
+
+    // Streak calculations
+    public async Task<StreakInfo> GetStreakInfoAsync()
+    {
+        var entries = await GetAllEntriesAsync();
+        if (entries.Count == 0)
+        {
+            return new StreakInfo { CurrentStreak = 0, LongestStreak = 0, MissedDays = new List<DateTime>() };
+        }
+
+        var entryDates = entries.Select(e => e.EntryDate.Date).Distinct().OrderByDescending(d => d).ToList();
+        
+        // Calculate current streak
+        int currentStreak = 0;
+        var today = DateTime.Today;
+        var checkDate = today;
+        
+        while (entryDates.Contains(checkDate))
+        {
+            currentStreak++;
+            checkDate = checkDate.AddDays(-1);
+        }
+
+        // Calculate longest streak
+        int longestStreak = 0;
+        int tempStreak = 0;
+        var sortedDates = entryDates.OrderBy(d => d).ToList();
+        
+        if (sortedDates.Count > 0)
+        {
+            var previousDate = sortedDates[0];
+            tempStreak = 1;
+            longestStreak = 1;
+
+            for (int i = 1; i < sortedDates.Count; i++)
+            {
+                var currentDate = sortedDates[i];
+                var daysDiff = (currentDate - previousDate).Days;
+
+                if (daysDiff == 1)
+                {
+                    tempStreak++;
+                    longestStreak = Math.Max(longestStreak, tempStreak);
+                }
+                else
+                {
+                    tempStreak = 1;
+                }
+
+                previousDate = currentDate;
+            }
+        }
+
+        // Calculate missed days (between first entry and today)
+        var missedDays = new List<DateTime>();
+        if (entryDates.Count > 0)
+        {
+            var firstEntry = entryDates.Min();
+            var lastEntry = entryDates.Max();
+            var checkDate2 = firstEntry;
+            
+            while (checkDate2 <= today)
+            {
+                if (!entryDates.Contains(checkDate2) && checkDate2 <= today)
+                {
+                    missedDays.Add(checkDate2);
+                }
+                checkDate2 = checkDate2.AddDays(1);
+            }
+        }
+
+        return new StreakInfo
+        {
+            CurrentStreak = currentStreak,
+            LongestStreak = longestStreak,
+            MissedDays = missedDays.OrderByDescending(d => d).ToList()
+        };
+    }
+}
+
+public class StreakInfo
+{
+    public int CurrentStreak { get; set; }
+    public int LongestStreak { get; set; }
+    public List<DateTime> MissedDays { get; set; } = new();
 }
 
 public class MoodCount

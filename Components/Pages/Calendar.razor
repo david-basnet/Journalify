@@ -1,0 +1,254 @@
+@page "/calendar"
+@inject JournalDatabase journalDb
+@inject NavigationManager Nav
+
+<PageTitle>Calendar - Journal App</PageTitle>
+
+<h3><i class="fas fa-calendar-alt"></i> Calendar Navigation</h3>
+
+<div class="calendar-container">
+    <!-- Calendar Header -->
+    <div class="calendar-header">
+        <button @onclick="PreviousMonth" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <h4>@currentDate.ToString("MMMM yyyy")</h4>
+        <button @onclick="NextMonth" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Day Names -->
+    <div class="calendar-weekdays">
+        <div class="weekday">Sun</div>
+        <div class="weekday">Mon</div>
+        <div class="weekday">Tue</div>
+        <div class="weekday">Wed</div>
+        <div class="weekday">Thu</div>
+        <div class="weekday">Fri</div>
+        <div class="weekday">Sat</div>
+    </div>
+
+    <!-- Calendar Days -->
+    <div class="calendar-days">
+        @foreach (var day in GetCalendarDays())
+        {
+            <div class="calendar-day @(day.IsCurrentMonth ? "" : "other-month") @(day.HasEntry ? "has-entry" : "") @(day.IsSelected ? "selected" : "")"
+                 @onclick="() => SelectDate(day.Date)">
+                <span class="day-number">@day.Date.Day</span>
+                @if (day.HasEntry)
+                {
+                    <div class="entry-indicator">
+                        <i class="fas fa-circle"></i>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Selected Date Entry -->
+<div class="selected-date-section">
+    <h4><i class="fas fa-calendar-check"></i> @selectedDate.ToString("dddd, MMMM dd, yyyy")</h4>
+
+    @if (selectedEntry == null)
+    {
+        <div class="empty-entry">
+            <i class="fas fa-inbox"></i>
+            <p>No entry for this date</p>
+        </div>
+    }
+    else
+    {
+        <div class="entry-display">
+            <div class="entry-header-display">
+                <div class="mood-display">
+                    <span class="mood-badge" style="background-color: @GetMoodColor(selectedEntry.PrimaryMood); color: white;">
+                        <i class="fas @GetMoodIcon(selectedEntry.PrimaryMood)"></i> @selectedEntry.PrimaryMood
+                    </span>
+                    @if (!string.IsNullOrEmpty(selectedEntry.SecondaryMood1))
+                    {
+                        <span class="mood-badge secondary" style="background-color: @GetMoodColor(selectedEntry.SecondaryMood1); color: white;">
+                            <i class="fas @GetMoodIcon(selectedEntry.SecondaryMood1)"></i> @selectedEntry.SecondaryMood1
+                        </span>
+                    }
+                    @if (!string.IsNullOrEmpty(selectedEntry.SecondaryMood2))
+                    {
+                        <span class="mood-badge secondary" style="background-color: @GetMoodColor(selectedEntry.SecondaryMood2); color: white;">
+                            <i class="fas @GetMoodIcon(selectedEntry.SecondaryMood2)"></i> @selectedEntry.SecondaryMood2
+                        </span>
+                    }
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(selectedEntry.Category))
+            {
+                <div class="entry-category-display">
+                    <i class="fas fa-tag"></i> @selectedEntry.Category
+                </div>
+            }
+
+            <div class="entry-content-display">
+                @((MarkupString)selectedEntry.Content)
+            </div>
+
+            @if (!string.IsNullOrEmpty(selectedEntry.Tags))
+            {
+                <div class="entry-tags-display">
+                    @foreach (var tag in selectedEntry.Tags.Split(',', System.StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        <span class="tag">@tag.Trim()</span>
+                    }
+                </div>
+            }
+
+            <div class="entry-actions-display">
+                <button @onclick="() => EditEntry(selectedEntry.Id)" class="btn btn-sm btn-warning">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button @onclick="() => DeleteEntry(selectedEntry.Id)" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+
+            <small class="text-muted">
+                Created: @selectedEntry.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                @if (selectedEntry.CreatedAt != selectedEntry.UpdatedAt)
+                {
+                    <br />
+                    <span>Updated: @selectedEntry.UpdatedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                }
+            </small>
+        </div>
+    }
+</div>
+
+@code {
+    private DateTime currentDate = DateTime.Now;
+    private DateTime selectedDate = DateTime.Today;
+    private JournalEntry? selectedEntry;
+    private List<JournalEntry> allEntries = new();
+
+    private class CalendarDay
+    {
+        public DateTime Date { get; set; }
+        public bool IsCurrentMonth { get; set; }
+        public bool HasEntry { get; set; }
+        public bool IsSelected { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAllEntries();
+        await LoadSelectedEntry();
+    }
+
+    private async Task LoadAllEntries()
+    {
+        allEntries = await journalDb.GetAllEntriesAsync();
+    }
+
+    private async Task LoadSelectedEntry()
+    {
+        selectedEntry = await journalDb.GetTodayEntryAsync();
+        if (selectedEntry == null)
+        {
+            selectedEntry = allEntries.FirstOrDefault(e => e.EntryDate.Date == selectedDate.Date);
+        }
+    }
+
+    private List<CalendarDay> GetCalendarDays()
+    {
+        var days = new List<CalendarDay>();
+        var firstDay = new DateTime(currentDate.Year, currentDate.Month, 1);
+        var lastDay = firstDay.AddMonths(1).AddDays(-1);
+        var startDate = firstDay.AddDays(-(int)firstDay.DayOfWeek);
+
+        for (var date = startDate; date <= lastDay.AddDays(6 - (int)lastDay.DayOfWeek); date = date.AddDays(1))
+        {
+            days.Add(new CalendarDay
+            {
+                Date = date,
+                IsCurrentMonth = date.Month == currentDate.Month,
+                HasEntry = allEntries.Any(e => e.EntryDate.Date == date.Date),
+                IsSelected = date.Date == selectedDate.Date
+            });
+        }
+
+        return days;
+    }
+
+    private void PreviousMonth()
+    {
+        currentDate = currentDate.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        currentDate = currentDate.AddMonths(1);
+    }
+
+    private async Task SelectDate(DateTime date)
+    {
+        selectedDate = date;
+        selectedEntry = allEntries.FirstOrDefault(e => e.EntryDate.Date == selectedDate.Date);
+        StateHasChanged();
+    }
+
+    private void EditEntry(int id)
+    {
+        Nav.NavigateTo($"/new-entry/{id}");
+    }
+
+    private async Task DeleteEntry(int entryId)
+    {
+        if (await ConfirmDelete())
+        {
+            await journalDb.DeleteEntryByIdAsync(entryId);
+            await LoadAllEntries();
+            await LoadSelectedEntry();
+        }
+    }
+
+    private Task<bool> ConfirmDelete() => Task.FromResult(true);
+
+    private string GetMoodIcon(string? mood) => (mood ?? string.Empty) switch
+    {
+        "Happy" => "fa-face-smile",
+        "Excited" => "fa-face-grin-stars",
+        "Grateful" => "fa-hands-praying",
+        "Hopeful" => "fa-sun",
+        "Peaceful" => "fa-spa",
+        "Energetic" => "fa-bolt",
+        "Inspired" => "fa-lightbulb",
+        "Loved" => "fa-heart",
+        "Calm" => "fa-droplet",
+        "Neutral" => "fa-face-meh",
+        "Curious" => "fa-magnifying-glass",
+        "Focused" => "fa-crosshairs",
+        "Determined" => "fa-fist-raised",
+        "Patient" => "fa-hourglass-end",
+        "Sad" => "fa-face-frown",
+        "Angry" => "fa-face-angry",
+        "Frustrated" => "fa-face-frustrated",
+        "Anxious" => "fa-head-side-virus",
+        "Tired" => "fa-battery-quarter",
+        "Confused" => "fa-brain",
+        "Disappointed" => "fa-thumbs-down",
+        "Stressed" => "fa-face-worried",
+        _ => "fa-circle"
+    };
+
+    private string GetMoodColor(string? mood)
+    {
+        if (string.IsNullOrEmpty(mood)) return "#007bff";
+        var category = MoodCategories.GetMoodCategory(mood);
+        return category switch
+        {
+            "Positive" => "#28a745",
+            "Neutral" => "#6c757d",
+            "Negative" => "#dc3545",
+            _ => "#007bff"
+        };
+    }
+}

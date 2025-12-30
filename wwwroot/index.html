@@ -25,6 +25,29 @@
     </div>
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>
+    <script>
+        // Theme helper: stores 'light' or 'dark' in localStorage and applies class to documentElement
+        (function(){
+            function applyTheme(theme){
+                if(theme === 'dark') document.documentElement.classList.add('theme-dark');
+                else document.documentElement.classList.remove('theme-dark');
+            }
+
+            var saved = localStorage.getItem('appTheme') || 'light';
+            applyTheme(saved);
+
+            window.toggleTheme = function(){
+                var current = localStorage.getItem('appTheme') || 'light';
+                var next = current === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('appTheme', next);
+                applyTheme(next);
+            }
+
+            window.getTheme = function(){
+                return localStorage.getItem('appTheme') || 'light';
+            }
+        })();
+    </script>
 
 </body>
 

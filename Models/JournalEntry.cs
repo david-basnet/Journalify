@@ -55,3 +55,28 @@ public static class MoodCategories
         return "Unknown";
     }
 }
+
+// Pre-built tags
+public static class PreBuiltTags
+{
+    public static readonly List<string> AllTags = new()
+    {
+        "Work", "Career", "Studies", "Family", "Friends", "Relationships", 
+        "Health", "Fitness", "Personal Growth", "Self-care", "Hobbies", 
+        "Travel", "Nature", "Finance", "Spirituality", "Birthday", "Holiday", 
+        "Vacation", "Celebration", "Exercise", "Reading", "Writing", "Cooking", 
+        "Meditation", "Yoga", "Music", "Shopping", "Parenting", "Projects", 
+        "Planning", "Reflection"
+    };
+
+    public static readonly Dictionary<string, List<string>> TagsByCategory = new()
+    {
+        { "Work & Career", new List<string> { "Work", "Career", "Studies", "Projects", "Planning" } },
+        { "Relationships", new List<string> { "Family", "Friends", "Relationships", "Parenting" } },
+        { "Health & Wellness", new List<string> { "Health", "Fitness", "Exercise", "Meditation", "Yoga", "Self-care" } },
+        { "Personal", new List<string> { "Personal Growth", "Reflection", "Spirituality" } },
+        { "Activities", new List<string> { "Hobbies", "Reading", "Writing", "Cooking", "Music", "Shopping" } },
+        { "Travel & Events", new List<string> { "Travel", "Nature", "Birthday", "Holiday", "Vacation", "Celebration" } },
+        { "Other", new List<string> { "Finance" } }
+    };
+}

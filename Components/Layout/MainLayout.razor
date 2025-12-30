@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JS
 
 <div class="page">
     <div class="sidebar">
@@ -6,8 +7,8 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        <div class="top-actions px-4" style="display:flex; justify-content:flex-end; gap:12px; padding-top:12px;">
+            <button class="btn btn-outline-primary" @onclick="ToggleTheme">Toggle Theme</button>
         </div>
 
         <article class="content px-4">
@@ -15,3 +16,10 @@
         </article>
     </main>
 </div>
+
+@code {
+    private async Task ToggleTheme()
+    {
+        await JS.InvokeVoidAsync("toggleTheme");
+    }
+}

@@ -1,0 +1,333 @@
+@page "/"
+@inject JournalDatabase journalDb
+
+<div class="dashboard-container">
+    <h1>Journal Dashboard</h1>
+    <p class="lead">Overview: mood distribution, most used tags, and word-count trends.</p>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <small class="muted">Last updated: @((lastUpdated==default)? "-" : lastUpdated.ToString("yyyy-MM-dd HH:mm:ss"))</small>
+        <small class="muted">Auto-refresh every 30s</small>
+    </div>
+
+    <div class="dashboard-grid">
+        <section class="card streak-info">
+            <h3><i class="fas fa-fire"></i> Streak Tracking</h3>
+            @if (streakInfo == null)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                <div class="streak-display">
+                    <div class="streak-item">
+                        <div class="streak-label">Current Streak</div>
+                        <div class="streak-value">@streakInfo.CurrentStreak <span class="streak-unit">days</span></div>
+                    </div>
+                    <div class="streak-item">
+                        <div class="streak-label">Longest Streak</div>
+                        <div class="streak-value">@streakInfo.LongestStreak <span class="streak-unit">days</span></div>
+                    </div>
+                </div>
+                @if (streakInfo.MissedDays != null && streakInfo.MissedDays.Count > 0)
+                {
+                    <div class="missed-days">
+                        <strong>Recent Missed Days (@streakInfo.MissedDays.Count total):</strong>
+                        <div class="missed-days-list">
+                            @foreach (var day in streakInfo.MissedDays.Take(10))
+                            {
+                                <span class="missed-day">@day.ToString("MMM dd, yyyy")</span>
+                            }
+                            @if (streakInfo.MissedDays.Count > 10)
+                            {
+                                <span class="missed-day-more">+@(streakInfo.MissedDays.Count - 10) more</span>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </section>
+
+        <section class="card most-frequent-mood">
+            <h3><i class="fas fa-star"></i> Most Frequent Mood</h3>
+            @if (mostFrequentMood == null || string.IsNullOrEmpty(mostFrequentMood.Mood))
+            {
+                <p>No data available</p>
+            }
+            else
+            {
+                <div class="frequent-mood-display">
+                    <div class="frequent-mood-icon" style="background:@GetMoodColor(mostFrequentMood.Mood)">
+                        <i class="fas @GetMoodIcon(mostFrequentMood.Mood)"></i>
+                    </div>
+                    <div class="frequent-mood-info">
+                        <div class="frequent-mood-name">@mostFrequentMood.Mood</div>
+                        <div class="frequent-mood-count">@mostFrequentMood.Count entries (@(GetPercentage(mostFrequentMood.Count, totalEntries))%)</div>
+                    </div>
+                </div>
+            }
+        </section>
+
+        <section class="card mood-distribution">
+            <h3><i class="fas fa-chart-pie"></i> Mood Distribution</h3>
+            @if (moodCounts == null)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                <ul class="mood-list">
+                    @foreach (var m in moodCounts)
+                    {
+                        <li>
+                            <span class="mood-dot" style="background:@GetMoodColor(m.Mood)"></span>
+                            <strong>@m.Mood</strong>
+                            <span class="muted">@m.Count entries (@(GetPercentage(m.Count, totalEntries))%)</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+
+        <section class="card tags-chart">
+            <h3><i class="fas fa-tags"></i> Most Used Tags</h3>
+            @if (tagCounts == null)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                <div class="tags-bars">
+                    @foreach (var t in tagCounts)
+                    {
+                        <div class="tag-row">
+                            <div class="tag-label">@t.Tag</div>
+                            <div class="tag-bar"><div class="tag-fill" style="width:@(GetTagPercent(t.Count))%"></div></div>
+                            <div class="tag-count">@t.Count</div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="card tag-breakdown">
+            <h3><i class="fas fa-layer-group"></i> Tag Breakdown by Category</h3>
+            @if (tagBreakdown == null)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                <div class="tag-breakdown-list">
+                    @foreach (var category in tagBreakdown)
+                    {
+                        <div class="tag-category-item">
+                            <div class="tag-category-header">
+                                <strong>@category.Key</strong>
+                                <span class="tag-category-percent">@(GetPercentage(category.Value, totalEntries))%</span>
+                            </div>
+                            <div class="tag-category-bar">
+                                <div class="tag-category-fill" style="width:@(GetPercentage(category.Value, totalEntries))%"></div>
+                            </div>
+                            <div class="tag-category-count">@category.Value entries</div>
+                        </div>
+                    }
+                </div>
+            }
+        </section>
+
+        <section class="card word-trends" style="grid-column: 1/-1;">
+            <h3>Word Count Trends</h3>
+            @if (wordTrends == null)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                <div class="trend-line">
+                    <svg viewBox="0 0 600 120" preserveAspectRatio="none">
+                        @if (wordTrends.Count > 0)
+                        {
+                            var max = wordTrends.Max(w => w.Value);
+                            var points = string.Join(" ", wordTrends.Select((w, i) =>
+                                {
+                                    var x = 10 + i * (560.0 / Math.Max(1, wordTrends.Count - 1));
+                                    var y = 100 - (w.Value / (double)Math.Max(1, max) * 80);
+                                    return $"{x},{y}";
+                                }
+                            ));
+                            <polyline points="@points" fill="none" stroke="#667eea" stroke-width="3" />
+                        }
+                    </svg>
+                </div>
+                <div class="trend-legend">
+                    @foreach (var pt in wordTrends)
+                    {
+                        <span class="legend-item">@pt.Key: <strong>@pt.Value</strong></span>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@code {
+    private List<MoodCount> moodCounts;
+    private MoodCount? mostFrequentMood;
+    private int totalEntries = 0;
+    private List<TagCount> tagCounts;
+    private Dictionary<string, int> tagBreakdown;
+    private List<KeyValuePair<string,int>> wordTrends;
+    private StreakInfo? streakInfo;
+    private DateTime lastUpdated;
+
+    private System.Threading.CancellationTokenSource? _cts;
+    private System.Threading.PeriodicTimer? _periodicTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _cts = new System.Threading.CancellationTokenSource();
+        await LoadStatsAsync();
+
+        // start background periodic refresh every 30 seconds
+        _periodicTimer = new System.Threading.PeriodicTimer(TimeSpan.FromSeconds(30));
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                while (await _periodicTimer.WaitForNextTickAsync(_cts.Token))
+                {
+                    await InvokeAsync(async () =>
+                    {
+                        await LoadStatsAsync();
+                        StateHasChanged();
+                    });
+                }
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception) { }
+        });
+    }
+
+    private async Task LoadStatsAsync()
+    {
+        var entries = await journalDb.GetAllEntriesAsync();
+        totalEntries = entries.Count;
+
+        // Mood distribution
+        moodCounts = entries
+            .GroupBy(e => e.PrimaryMood ?? "Unknown")
+            .Select(g => new MoodCount { Mood = g.Key, Count = g.Count() })
+            .OrderByDescending(m => m.Count)
+            .ToList();
+
+        // Most frequent mood
+        mostFrequentMood = moodCounts.FirstOrDefault();
+
+        // Tags
+        var tags = entries.SelectMany(e => (e.Tags ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
+            .Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t));
+
+        tagCounts = tags.GroupBy(t => t).Select(g => new TagCount { Tag = g.Key, Count = g.Count() })
+            .OrderByDescending(t => t.Count).Take(8).ToList();
+
+        // Tag breakdown by category
+        tagBreakdown = new Dictionary<string, int>();
+        foreach (var category in PreBuiltTags.TagsByCategory)
+        {
+            int count = entries.Count(e => 
+            {
+                if (string.IsNullOrWhiteSpace(e.Tags)) return false;
+                var entryTags = e.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(t => t.Trim().TrimStart('#'))
+                    .ToList();
+                return category.Value.Any(tag => entryTags.Contains(tag));
+            });
+            if (count > 0)
+            {
+                tagBreakdown[category.Key] = count;
+            }
+        }
+        tagBreakdown = tagBreakdown.OrderByDescending(kvp => kvp.Value).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        // Word count trends (avg words per month)
+        wordTrends = entries
+            .GroupBy(e => new DateTime(e.EntryDate.Year, e.EntryDate.Month, 1))
+            .OrderBy(g => g.Key)
+            .Select(g => new KeyValuePair<string,int>(g.Key.ToString("MMM yyyy"), (int)g.Average(e => (e.Content ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Length)))
+            .ToList();
+
+        // Streak info
+        streakInfo = await journalDb.GetStreakInfoAsync();
+
+        lastUpdated = DateTime.Now;
+    }
+
+    private int GetPercentage(int count, int total)
+    {
+        if (total == 0) return 0;
+        return (int)Math.Round(count * 100.0 / total);
+    }
+
+    private int GetTagPercent(int count)
+    {
+        if (tagCounts == null || tagCounts.Count == 0) return 0;
+        var max = tagCounts.Max(t => t.Count);
+        return (int)Math.Round(count * 100.0 / Math.Max(1, max));
+    }
+
+    private string GetMoodColor(string? mood)
+    {
+        var category = MoodCategories.GetMoodCategory(mood ?? "");
+        return category switch
+        {
+            "Positive" => "#28a745",
+            "Neutral" => "#6c757d",
+            "Negative" => "#dc3545",
+            _ => "#667eea",
+        };
+    }
+
+    private string GetMoodIcon(string? mood) => (mood ?? string.Empty) switch
+    {
+        "Happy" => "fa-face-smile",
+        "Excited" => "fa-face-grin-stars",
+        "Grateful" => "fa-hands-praying",
+        "Hopeful" => "fa-sun",
+        "Peaceful" => "fa-spa",
+        "Energetic" => "fa-bolt",
+        "Inspired" => "fa-lightbulb",
+        "Loved" => "fa-heart",
+        "Calm" => "fa-droplet",
+        "Neutral" => "fa-face-meh",
+        "Curious" => "fa-magnifying-glass",
+        "Focused" => "fa-crosshairs",
+        "Determined" => "fa-fist-raised",
+        "Patient" => "fa-hourglass-end",
+        "Sad" => "fa-face-frown",
+        "Angry" => "fa-face-angry",
+        "Frustrated" => "fa-face-frustrated",
+        "Anxious" => "fa-head-side-virus",
+        "Tired" => "fa-battery-quarter",
+        "Confused" => "fa-brain",
+        "Disappointed" => "fa-thumbs-down",
+        "Stressed" => "fa-face-worried",
+        _ => "fa-circle"
+    };
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            _cts?.Cancel();
+            if (_periodicTimer != null)
+            {
+                _periodicTimer.Dispose();
+                _periodicTimer = null;
+            }
+        }
+        catch { }
+        await Task.CompletedTask;
+    }
+
+    class TagCount { public string Tag { get; set; } = ""; public int Count { get; set; } }
+}

@@ -1,0 +1,340 @@
+/* Entries Page Styles */
+
+h4 {
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+h4 i {
+    font-size: 24px;
+}
+
+/* Search & Filter Section */
+.search-filter-group {
+    background: var(--surface);
+    border: 1px solid rgba(0,0,0,0.04);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.search-filter-group .form-group {
+    margin-bottom: 12px;
+}
+
+.search-filter-group .form-group:last-of-type {
+    margin-bottom: 0;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background-color: var(--surface);
+    color: var(--text);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 6px rgba(102,126,234,0.06);
+}
+
+.search-filter-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text);
+    font-size: 13px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.date-range-filter {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.date-inputs {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.date-inputs > div {
+    flex: 1;
+}
+
+.date-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text);
+    font-size: 12px;
+}
+
+.btn-outline-secondary {
+    background-color: transparent;
+    border: 2px solid var(--muted);
+    color: var(--muted);
+    padding: 10px 12px;
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--muted);
+    color: var(--surface);
+}
+
+/* Button Styling */
+.btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-primary {
+    background-color: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary);
+    color: var(--surface);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    color: #333;
+    border: none;
+}
+
+.btn-warning:hover {
+    background-color: #ffb300;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: var(--surface);
+    border: none;
+}
+
+.btn-danger:hover { background-color: #c82333; }
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+}
+
+.empty-state i {
+    font-size: 64px;
+    color: rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+    display: block;
+}
+
+.empty-state p { font-size: 16px; color: var(--muted); }
+
+/* Entries List */
+.entries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.entries-list > p {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+/* Entry Card */
+.entry-card {
+    background: var(--surface);
+    border: 1px solid rgba(0,0,0,0.04);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.entry-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 6px 12px rgba(102,126,234,0.08);
+    transform: translateY(-2px);
+}
+
+/* Entry Header */
+.entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.entry-date {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.entry-date i { color: var(--primary); }
+
+/* Moods */
+.entry-moods {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mood-badge {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.mood-badge.secondary {
+    opacity: 0.85;
+}
+
+.mood-badge i {
+    font-size: 11px;
+}
+
+/* Category */
+.entry-category {
+    background-color: rgba(102,126,234,0.06);
+    color: var(--primary);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.entry-category i { font-size: 11px; }
+
+/* Content */
+.entry-content {
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 12px 0;
+    word-break: break-word;
+}
+
+/* Tags */
+.entry-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+
+.tag {
+    background-color: rgba(102,126,234,0.06);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid rgba(102, 126, 234, 0.12);
+}
+
+/* Footer */
+.entry-footer {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 12px 0;
+    padding: 8px 0;
+    border-top: 1px solid rgba(0,0,0,0.04);
+}
+
+/* Actions */
+.entry-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0,0,0,0.04);
+}
+
+.entry-actions .btn {
+    flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .entry-header {
+        flex-direction: column;
+    }
+
+    .entry-actions {
+        gap: 6px;
+    }
+
+    .entry-actions .btn {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+
+    .search-filter-group {
+        padding: 12px;
+    }
+
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+
+    .date-inputs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
