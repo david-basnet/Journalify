@@ -48,6 +48,36 @@
             }
         })();
     </script>
+    <script>
+        // Small editor utilities used by NewEntry for inserting markdown snippets
+        window.editor = {
+            insertAtCursor: function(textareaId, before, after) {
+                var ta = document.getElementById(textareaId);
+                if (!ta) return;
+                var start = ta.selectionStart;
+                var end = ta.selectionEnd;
+                var selected = ta.value.substring(start, end);
+                var newText = before + selected + after;
+                ta.setRangeText(newText, start, end, 'end');
+                ta.focus();
+                // dispatch input event so Blazor sees the change
+                ta.dispatchEvent(new Event('input', { bubbles: true }));
+            },
+            insertLink: function(textareaId) {
+                var ta = document.getElementById(textareaId);
+                if (!ta) return;
+                var start = ta.selectionStart;
+                var end = ta.selectionEnd;
+                var selected = ta.value.substring(start, end) || 'link text';
+                var url = prompt('Enter URL', 'https://');
+                if (!url) return;
+                var newText = '[' + selected + '](' + url + ')';
+                ta.setRangeText(newText, start, end, 'end');
+                ta.focus();
+                ta.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        };
+    </script>
 
 </body>
 

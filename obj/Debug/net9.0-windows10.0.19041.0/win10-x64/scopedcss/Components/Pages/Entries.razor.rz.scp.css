@@ -176,11 +176,21 @@ h4 i[b-a335s1u9oj] {
 }
 
 .entries-list > p[b-a335s1u9oj] {
-    color: #667eea;
+    color: var(--muted);
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     margin-bottom: 8px;
 }
+
+/* Utility & polish */
+.full-width[b-a335s1u9oj] { width: 100%; margin-top: 10px; }
+.entries-count[b-a335s1u9oj] { color: var(--muted); font-size: 14px; }
+.entry-updated[b-a335s1u9oj] { margin-left: 20px; }
+
+/* Mood color classes */
+.mood-positive[b-a335s1u9oj] { background-color: #28a745; color: var(--surface); }
+.mood-neutral[b-a335s1u9oj] { background-color: #6c757d; color: var(--surface); }
+.mood-negative[b-a335s1u9oj] { background-color: #dc3545; color: var(--surface); }
 
 /* Entry Card */
 .entry-card[b-a335s1u9oj] {

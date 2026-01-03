@@ -1,6 +1,7 @@
 @page "/entries"
 @inject JournalDatabase journalDb
 @inject NavigationManager Nav
+@using MauiApp1.Services
 
 <h4><i class="fas fa-list"></i> All Entries</h4>
 
@@ -52,7 +53,7 @@
         </div>
     </div>
 
-    <button @onclick="LoadEntries" class="btn btn-outline-primary" style="width: 100%; margin-top: 10px;">
+    <button @onclick="LoadEntries" class="btn btn-outline-primary full-width">
         <i class="fas fa-sync-alt"></i> Refresh
     </button>
 </div>
@@ -67,7 +68,7 @@
 else
 {
     <div class="entries-list">
-        <p style="color: #666; font-size: 14px;">Showing @filteredEntries.Count entry(ies)</p>
+        <p class="entries-count">Showing @filteredEntries.Count entry(ies)</p>
         @foreach (var entry in filteredEntries)
         {
             <div class="entry-card">
@@ -76,18 +77,18 @@ else
                         <i class="fas fa-calendar"></i> @entry.EntryDate.ToString("ddd, MMM dd, yyyy")
                     </div>
                     <div class="entry-moods">
-                        <span class="mood-badge" style="background-color: @GetMoodColor(entry.PrimaryMood); color: white;">
+                        <span class="mood-badge @GetMoodClass(entry.PrimaryMood)">
                             <i class="fas @GetMoodIcon(entry.PrimaryMood)"></i> @entry.PrimaryMood
                         </span>
                         @if (!string.IsNullOrEmpty(entry.SecondaryMood1))
                         {
-                            <span class="mood-badge secondary" style="background-color: @GetMoodColor(entry.SecondaryMood1); color: white;">
+                            <span class="mood-badge secondary @GetMoodClass(entry.SecondaryMood1)">
                                 <i class="fas @GetMoodIcon(entry.SecondaryMood1)"></i> @entry.SecondaryMood1
                             </span>
                         }
                         @if (!string.IsNullOrEmpty(entry.SecondaryMood2))
                         {
-                            <span class="mood-badge secondary" style="background-color: @GetMoodColor(entry.SecondaryMood2); color: white;">
+                            <span class="mood-badge secondary @GetMoodClass(entry.SecondaryMood2)">
                                 <i class="fas @GetMoodIcon(entry.SecondaryMood2)"></i> @entry.SecondaryMood2
                             </span>
                         }
@@ -102,7 +103,7 @@ else
                 }
 
                 <div class="entry-content">
-                    @((MarkupString)((entry.Content?.Length ?? 0) > 150 ? (entry.Content ?? "").Substring(0, 150) + "..." : (entry.Content ?? "")))
+                    @((MarkupString)MarkdownRenderer.RenderPreview(entry.Content, 300))
                 </div>
 
                 @if (!string.IsNullOrEmpty(entry.Tags))
@@ -117,9 +118,9 @@ else
 
                 <div class="entry-footer">
                     <small>Created: @entry.CreatedAt.ToString("MMM dd, yyyy HH:mm")</small>
-                    @if (entry.CreatedAt != entry.UpdatedAt)
+                        @if (entry.CreatedAt != entry.UpdatedAt)
                     {
-                        <small style="margin-left: 20px;">Updated: @entry.UpdatedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                        <small class="entry-updated">Updated: @entry.UpdatedAt.ToString("MMM dd, yyyy HH:mm")</small>
                     }
                 </div>
 
@@ -284,4 +285,19 @@ else
             _ => "#007bff"
         };
     }
+
+    private string GetMoodClass(string? mood)
+    {
+        if (string.IsNullOrEmpty(mood)) return "mood-neutral";
+        var category = MoodCategories.GetMoodCategory(mood);
+        return category switch
+        {
+            "Positive" => "mood-positive",
+            "Neutral" => "mood-neutral",
+            "Negative" => "mood-negative",
+            _ => "mood-neutral"
+        };
+    }
+
+    // Markdown rendering now uses shared MarkdownRenderer service.
 }

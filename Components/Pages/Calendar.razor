@@ -1,6 +1,7 @@
 @page "/calendar"
 @inject JournalDatabase journalDb
 @inject NavigationManager Nav
+@using MauiApp1.Services
 
 <PageTitle>Calendar - Journal App</PageTitle>
 
@@ -63,18 +64,18 @@
         <div class="entry-display">
             <div class="entry-header-display">
                 <div class="mood-display">
-                    <span class="mood-badge" style="background-color: @GetMoodColor(selectedEntry.PrimaryMood); color: white;">
+                    <span class="mood-badge @GetMoodClass(selectedEntry.PrimaryMood)">
                         <i class="fas @GetMoodIcon(selectedEntry.PrimaryMood)"></i> @selectedEntry.PrimaryMood
                     </span>
                     @if (!string.IsNullOrEmpty(selectedEntry.SecondaryMood1))
                     {
-                        <span class="mood-badge secondary" style="background-color: @GetMoodColor(selectedEntry.SecondaryMood1); color: white;">
+                        <span class="mood-badge secondary @GetMoodClass(selectedEntry.SecondaryMood1)">
                             <i class="fas @GetMoodIcon(selectedEntry.SecondaryMood1)"></i> @selectedEntry.SecondaryMood1
                         </span>
                     }
                     @if (!string.IsNullOrEmpty(selectedEntry.SecondaryMood2))
                     {
-                        <span class="mood-badge secondary" style="background-color: @GetMoodColor(selectedEntry.SecondaryMood2); color: white;">
+                        <span class="mood-badge secondary @GetMoodClass(selectedEntry.SecondaryMood2)">
                             <i class="fas @GetMoodIcon(selectedEntry.SecondaryMood2)"></i> @selectedEntry.SecondaryMood2
                         </span>
                     }
@@ -89,7 +90,7 @@
             }
 
             <div class="entry-content-display">
-                @((MarkupString)selectedEntry.Content)
+                @((MarkupString)MarkdownRenderer.SanitizeHtml(MarkdownRenderer.ToHtml(selectedEntry.Content)))
             </div>
 
             @if (!string.IsNullOrEmpty(selectedEntry.Tags))
@@ -249,6 +250,19 @@
             "Neutral" => "#6c757d",
             "Negative" => "#dc3545",
             _ => "#007bff"
+        };
+    }
+
+    private string GetMoodClass(string? mood)
+    {
+        if (string.IsNullOrEmpty(mood)) return "mood-neutral";
+        var category = MoodCategories.GetMoodCategory(mood);
+        return category switch
+        {
+            "Positive" => "mood-positive",
+            "Neutral" => "mood-neutral",
+            "Negative" => "mood-negative",
+            _ => "mood-neutral"
         };
     }
 }

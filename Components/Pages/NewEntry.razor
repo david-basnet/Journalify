@@ -2,6 +2,7 @@
 @page "/new-entry/{entryId:int}"
 @inject JournalDatabase journalDb
 @inject NavigationManager Nav
+@inject IJSRuntime js
 
 <h3><i class="fas fa-pen-nib"></i> New Journal Entry</h3>
 
@@ -27,7 +28,36 @@
 
 <div class="form-group">
     <label>Content:</label>
-    <textarea @bind="content" class="form-control" rows="6" placeholder="Write your thoughts here..."></textarea>
+    <div class="markdown-editor">
+        <div class="editor-toolbar">
+            @if (isMarkdown)
+            {
+                <div class="toolbar-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertWrap("**","**")' title="Bold"><i class="fas fa-bold"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertWrap("*","*")' title="Italic"><i class="fas fa-italic"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="InsertLink" title="Insert link"><i class="fas fa-link"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick='() => InsertWrap("```\n","\n```")' title="Code block"><i class="fas fa-code"></i></button>
+                </div>
+            }
+
+            <button class="btn btn-outline-secondary" @onclick="() => ToggleMarkdown(false)" disabled="@(!isMarkdown)">Plain</button>
+            <button class="btn btn-outline-secondary" @onclick="() => ToggleMarkdown(true)" disabled="@(isMarkdown)">Markdown</button>
+        </div>
+
+        @if (!isMarkdown)
+        {
+            <textarea @bind="content" class="form-control" rows="6" placeholder="Write your thoughts here..."></textarea>
+        }
+        else
+        {
+            <div class="editor-content">
+                <textarea id="mdEditor" @bind="content" class="form-control editor-pane" rows="10" placeholder="Write Markdown here..."></textarea>
+                <div class="markdown-preview">
+                    @((MarkupString)RenderMarkdown(content))
+                </div>
+            </div>
+        }
+    </div>
 </div>
 
 <div class="mood-section">
@@ -143,6 +173,43 @@
     private int currentEntryId = 0;
 
     private List<string> allMoods = new();
+    private bool isMarkdown = false;
+
+    private void ToggleMarkdown(bool enable)
+    {
+        isMarkdown = enable;
+    }
+
+    private async Task InsertWrap(string before, string after)
+    {
+        try
+        {
+            await js.InvokeVoidAsync("editor.insertAtCursor", "mdEditor", before, after);
+        }
+        catch { }
+    }
+
+    private async Task InsertLink()
+    {
+        try
+        {
+            await js.InvokeVoidAsync("editor.insertLink", "mdEditor");
+        }
+        catch { }
+    }
+
+    private string RenderMarkdown(string md)
+    {
+        if (string.IsNullOrWhiteSpace(md)) return string.Empty;
+        try
+        {
+            return Markdig.Markdown.ToHtml(md);
+        }
+        catch
+        {
+            return "<p><em>Error rendering markdown</em></p>";
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

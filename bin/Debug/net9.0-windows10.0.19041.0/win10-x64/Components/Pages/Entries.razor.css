@@ -176,11 +176,21 @@ h4 i {
 }
 
 .entries-list > p {
-    color: #667eea;
+    color: var(--muted);
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     margin-bottom: 8px;
 }
+
+/* Utility & polish */
+.full-width { width: 100%; margin-top: 10px; }
+.entries-count { color: var(--muted); font-size: 14px; }
+.entry-updated { margin-left: 20px; }
+
+/* Mood color classes */
+.mood-positive { background-color: #28a745; color: var(--surface); }
+.mood-neutral { background-color: #6c757d; color: var(--surface); }
+.mood-negative { background-color: #dc3545; color: var(--surface); }
 
 /* Entry Card */
 .entry-card {
