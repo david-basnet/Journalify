@@ -1,8 +1,10 @@
 @page "/new-entry"
 @page "/new-entry/{entryId:int}"
+@using MauiApp1.Services
 @inject JournalDatabase journalDb
 @inject NavigationManager Nav
 @inject IJSRuntime js
+@inject AuthenticationService authService
 
 <h3><i class="fas fa-pen-nib"></i> New Journal Entry</h3>
 
@@ -22,12 +24,16 @@
 }
 
 <div class="form-group">
-    <label>Entry Date:</label>
-    <input type="date" @bind="selectedDate" />
+    <label>Entry Date: <span class="text-muted">(One entry per day)</span></label>
+    <input type="date" @bind="selectedDate" class="form-control" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+    @if (selectedDate.Date > DateTime.Today)
+    {
+        <small class="text-danger">⚠️ Cannot select future dates</small>
+    }
 </div>
 
 <div class="form-group">
-    <label>Content:</label>
+    <label>Content: <span class="text-muted">(Minimum 10 characters)</span></label>
     <div class="markdown-editor">
         <div class="editor-toolbar">
             @if (isMarkdown)
@@ -46,16 +52,14 @@
 
         @if (!isMarkdown)
         {
-            <textarea @bind="content" class="form-control" rows="6" placeholder="Write your thoughts here..."></textarea>
+            <textarea @bind="content" @bind:event="oninput" class="form-control" rows="6" placeholder="Write your thoughts here..."></textarea>
         }
         else
         {
-            <div class="editor-content">
-                <textarea id="mdEditor" @bind="content" class="form-control editor-pane" rows="10" placeholder="Write Markdown here..."></textarea>
-                <div class="markdown-preview">
-                    @((MarkupString)RenderMarkdown(content))
-                </div>
+            <div class="markdown-help">
+                <small><i class="fas fa-info-circle"></i> <strong>Markdown Tips:</strong> Use <code>**text**</code> for <strong>bold</strong>, <code>*text*</code> for <em>italic</em>, <code># Heading</code> for headings, <code>- item</code> for lists</small>
             </div>
+            <textarea id="mdEditor" @bind="content" @bind:event="oninput" class="form-control editor-pane" rows="12" placeholder="Write Markdown here...&#10;&#10;Example:&#10;**Bold text**&#10;*Italic text*&#10;# Heading 1&#10;## Heading 2&#10;- List item"></textarea>
         }
     </div>
 </div>
@@ -63,13 +67,27 @@
 <div class="mood-section">
     <h5><i class="fas fa-face-smile"></i> Mood Tracking</h5>
     <div class="form-group">
-        <label>Primary Mood (Required):</label>
-        <select @bind="primaryMood" class="form-control">
+        <label>Primary Mood <span class="text-danger">*</span> (Required):</label>
+        <select @bind="primaryMood" class="form-control" required>
             <option value="">-- Select Primary Mood --</option>
-            @foreach (var mood in allMoods)
-            {
-                <option value="@mood">@mood (@GetMoodCategory(mood))</option>
-            }
+            <optgroup label="😊 Positive Moods">
+                @foreach (var mood in MoodCategories.PositiveMoods)
+                {
+                    <option value="@mood">@mood</option>
+                }
+            </optgroup>
+            <optgroup label="😐 Neutral Moods">
+                @foreach (var mood in MoodCategories.NeutralMoods)
+                {
+                    <option value="@mood">@mood</option>
+                }
+            </optgroup>
+            <optgroup label="😔 Negative Moods">
+                @foreach (var mood in MoodCategories.NegativeMoods)
+                {
+                    <option value="@mood">@mood</option>
+                }
+            </optgroup>
         </select>
     </div>
     <div class="form-group">
@@ -203,7 +221,8 @@
         if (string.IsNullOrWhiteSpace(md)) return string.Empty;
         try
         {
-            return Markdig.Markdown.ToHtml(md);
+            var html = Markdig.Markdown.ToHtml(md);
+            return MarkdownRenderer.SanitizeHtml(html);
         }
         catch
         {
@@ -218,17 +237,21 @@
         allMoods.AddRange(MoodCategories.NegativeMoods);
         allMoods.Sort();
 
-        if (entryId.HasValue)
+        if (entryId.HasValue && authService.CurrentUser != null)
         {
-            await LoadEntryForEdit(await journalDb.GetEntryByIdAsync(entryId.Value));
+            var entry = await journalDb.GetEntryByIdAsync(entryId.Value, authService.CurrentUser.Id);
+            if (entry != null)
+            {
+                await LoadEntryForEdit(entry);
+            }
         }
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (entryId.HasValue)
+        if (entryId.HasValue && authService.CurrentUser != null)
         {
-            var e = await journalDb.GetEntryByIdAsync(entryId.Value);
+            var e = await journalDb.GetEntryByIdAsync(entryId.Value, authService.CurrentUser.Id);
             if (e != null)
             {
                 await LoadEntryForEdit(e);
@@ -254,13 +277,11 @@
     {
         var allTags = new List<string>();
         
-        // Add pre-built tags
         foreach (var tag in selectedPreBuiltTags)
         {
             allTags.Add("#" + tag);
         }
         
-        // Add custom tags
         if (!string.IsNullOrWhiteSpace(customTags))
         {
             var custom = customTags.Split(',', StringSplitOptions.RemoveEmptyEntries)
@@ -299,7 +320,6 @@
         category = entry.Category ?? "";
         tags = entry.Tags ?? "";
         
-        // Parse existing tags
         selectedPreBuiltTags.Clear();
         customTags = "";
         if (!string.IsNullOrWhiteSpace(tags))
@@ -358,41 +378,60 @@
 
         if (string.IsNullOrWhiteSpace(content))
         {
-            errorMessage = "Please write some content for your entry.";
+            errorMessage = "⚠️ Please write some content for your entry.";
             return;
         }
+        
+        if (content.Trim().Length < 10)
+        {
+            errorMessage = "⚠️ Entry content must be at least 10 characters long.";
+            return;
+        }
+        
         if (string.IsNullOrWhiteSpace(primaryMood))
         {
-            errorMessage = "Please select a primary mood.";
+            errorMessage = "⚠️ Please select a primary mood. This is required.";
+            return;
+        }
+
+        if (selectedDate.Date > DateTime.Today)
+        {
+            errorMessage = "⚠️ Cannot create entries for future dates. Please select today or a past date.";
             return;
         }
 
         var entry = new JournalEntry
         {
             EntryDate = selectedDate,
-            Content = content,
+            Content = content.Trim(),
             PrimaryMood = primaryMood,
             SecondaryMood1 = string.IsNullOrWhiteSpace(secondaryMood1) ? string.Empty : secondaryMood1,
             SecondaryMood2 = string.IsNullOrWhiteSpace(secondaryMood2) ? string.Empty : secondaryMood2,
-            Category = category,
+            Category = string.IsNullOrWhiteSpace(category) ? string.Empty : category.Trim(),
             Tags = FormatAllTags()
         };
 
         try
         {
-            await journalDb.SaveEntryAsync(entry);
-            successMessage = "Entry saved successfully!";
-            await Task.Delay(1000);
+            if (authService.CurrentUser == null)
+            {
+                errorMessage = "❌ You must be signed in to save entries.";
+                return;
+            }
+
+            await journalDb.SaveEntryAsync(entry, authService.CurrentUser.Id);
+            successMessage = "✅ Entry saved successfully! Redirecting...";
+            await Task.Delay(1500);
             ClearForm();
             Nav.NavigateTo("/entries");
         }
         catch (InvalidOperationException ex)
         {
-            errorMessage = ex.Message;
+            errorMessage = "⚠️ " + ex.Message;
         }
         catch (Exception ex)
         {
-            errorMessage = "Error saving entry: " + ex.Message;
+            errorMessage = "❌ Error saving entry: " + ex.Message;
         }
     }
 
@@ -405,12 +444,19 @@
 
         if (string.IsNullOrWhiteSpace(content))
         {
-            errorMessage = "Please write some content for your entry.";
+            errorMessage = "⚠️ Please write some content for your entry.";
             return;
         }
+        
+        if (content.Trim().Length < 10)
+        {
+            errorMessage = "⚠️ Entry content must be at least 10 characters long.";
+            return;
+        }
+        
         if (string.IsNullOrWhiteSpace(primaryMood))
         {
-            errorMessage = "Please select a primary mood.";
+            errorMessage = "⚠️ Please select a primary mood. This is required.";
             return;
         }
 
@@ -418,25 +464,31 @@
         {
             Id = currentEntryId,
             EntryDate = selectedDate,
-            Content = content,
+            Content = content.Trim(),
             PrimaryMood = primaryMood,
             SecondaryMood1 = string.IsNullOrWhiteSpace(secondaryMood1) ? string.Empty : secondaryMood1,
             SecondaryMood2 = string.IsNullOrWhiteSpace(secondaryMood2) ? string.Empty : secondaryMood2,
-            Category = category,
+            Category = string.IsNullOrWhiteSpace(category) ? string.Empty : category.Trim(),
             Tags = FormatAllTags()
         };
 
         try
         {
-            await journalDb.UpdateEntryAsync(entry);
-            successMessage = "Entry updated successfully!";
-            await Task.Delay(1000);
+            if (authService.CurrentUser == null)
+            {
+                errorMessage = "❌ You must be signed in to update entries.";
+                return;
+            }
+
+            await journalDb.UpdateEntryAsync(entry, authService.CurrentUser.Id);
+            successMessage = "✅ Entry updated successfully! Redirecting...";
+            await Task.Delay(1500);
             ClearForm();
             Nav.NavigateTo("/entries");
         }
         catch (Exception ex)
         {
-            errorMessage = "Error updating entry: " + ex.Message;
+            errorMessage = "❌ Error updating entry: " + ex.Message;
         }
     }
 }

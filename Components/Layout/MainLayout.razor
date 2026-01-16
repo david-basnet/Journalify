@@ -1,15 +1,34 @@
 ﻿@inherits LayoutComponentBase
 @inject IJSRuntime JS
+@inject AuthenticationService authService
+@inject NavigationManager nav
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+    @if (authService.IsAuthenticated)
+    {
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    }
 
     <main>
-        <div class="top-actions px-4" style="display:flex; justify-content:flex-end; gap:12px; padding-top:12px;">
-            <button class="btn btn-outline-primary" @onclick="ToggleTheme">Toggle Theme</button>
-        </div>
+        @if (authService.IsAuthenticated)
+        {
+            <div class="top-actions px-4">
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span>@authService.CurrentUser?.Username</span>
+                </div>
+                <button class="btn btn-outline-primary theme-toggle-btn" @onclick="ToggleTheme" title="Toggle Theme">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
+                <button class="btn btn-outline-danger sign-out-btn" @onclick="SignOut" title="Sign Out">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sign Out
+                </button>
+            </div>
+        }
 
         <article class="content px-4">
             @Body
@@ -21,5 +40,12 @@
     private async Task ToggleTheme()
     {
         await JS.InvokeVoidAsync("toggleTheme");
+        StateHasChanged();
+    }
+
+    private void SignOut()
+    {
+        authService.SignOut();
+        nav.NavigateTo("/login");
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using MauiApp1.Services;
 
 namespace MauiApp1;
 
@@ -20,19 +21,25 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<JournalDatabase>(s =>
         {
-            // Create a "Journal" folder in Documents for easy access
             var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             var journalFolder = Path.Combine(documentsPath, "JournalApp");
-            
-            // Create folder if it doesn't exist
+
             if (!Directory.Exists(journalFolder))
             {
                 Directory.CreateDirectory(journalFolder);
             }
-            
+
             var dbPath = Path.Combine(journalFolder, "journal.db3");
             return new JournalDatabase(dbPath);
         });
+
+        builder.Services.AddScoped<AuthenticationService>(s =>
+        {
+            var journalDb = s.GetRequiredService<JournalDatabase>();
+            return new AuthenticationService(journalDb);
+        });
+
+        builder.Services.AddScoped<PdfExportService>();
 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();

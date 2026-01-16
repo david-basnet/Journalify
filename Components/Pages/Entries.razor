@@ -1,6 +1,7 @@
 @page "/entries"
 @inject JournalDatabase journalDb
 @inject NavigationManager Nav
+@inject AuthenticationService authService
 @using MauiApp1.Services
 
 <h4><i class="fas fa-list"></i> All Entries</h4>
@@ -13,7 +14,7 @@
     <div class="filter-row">
     <div class="form-group">
         <label>Filter by Mood:</label>
-        <select @bind="filterMood" @bind:event="oninput" class="form-control">
+        <select @bind="filterMood" @bind:event="onchange" @bind:after="OnFilterChanged" class="form-control">
             <option value="">-- All Moods --</option>
             @foreach (var mood in allMoods)
             {
@@ -24,7 +25,7 @@
 
         <div class="form-group">
             <label>Filter by Tag:</label>
-            <select @bind="filterTag" @bind:event="oninput" class="form-control">
+            <select @bind="filterTag" @bind:event="onchange" @bind:after="OnFilterChanged" class="form-control">
                 <option value="">-- All Tags --</option>
                 @foreach (var tag in availableTags)
                 {
@@ -58,7 +59,7 @@
     </button>
 </div>
 
-@if (filteredEntries == null || filteredEntries.Count == 0)
+@if (paginatedEntries == null || paginatedEntries.Count == 0)
 {
     <div class="empty-state">
         <i class="fas fa-inbox"></i>
@@ -68,8 +69,19 @@
 else
 {
     <div class="entries-list">
-        <p class="entries-count">Showing @filteredEntries.Count entry(ies)</p>
-        @foreach (var entry in filteredEntries)
+        <div class="entries-header">
+            <p class="entries-count">Showing @GetDisplayRange() of @totalFilteredCount entry(ies)</p>
+            <div class="page-size-selector">
+                <label>Entries per page:</label>
+                <select @bind="pageSize" @bind:event="onchange" @bind:after="OnPageSizeChanged" class="form-control page-size-select">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+        </div>
+        @foreach (var entry in paginatedEntries)
         {
             <div class="entry-card">
                 <div class="entry-header">
@@ -135,6 +147,40 @@ else
             </div>
         }
     </div>
+
+    @if (totalPages > 1)
+    {
+        <div class="pagination-container">
+            <div class="pagination-info">
+                Page @currentPage of @totalPages
+            </div>
+            <div class="pagination-controls">
+                <button @onclick="GoToFirstPage" class="btn btn-sm btn-outline-primary" disabled="@(currentPage == 1)" title="First page">
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+                <button @onclick="GoToPreviousPage" class="btn btn-sm btn-outline-primary" disabled="@(currentPage == 1)" title="Previous page">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                
+                @for (int i = GetStartPage(); i <= GetEndPage(); i++)
+                {
+                    var pageNum = i;
+                    <button @onclick="() => GoToPage(pageNum)" 
+                            class="btn btn-sm @(pageNum == currentPage ? "btn-primary" : "btn-outline-primary")"
+                            title="Page @pageNum">
+                        @pageNum
+                    </button>
+                }
+                
+                <button @onclick="GoToNextPage" class="btn btn-sm btn-outline-primary" disabled="@(currentPage == totalPages)" title="Next page">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+                <button @onclick="GoToLastPage" class="btn btn-sm btn-outline-primary" disabled="@(currentPage == totalPages)" title="Last page">
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </div>
+        </div>
+    }
 }
 
 @code {
@@ -142,11 +188,17 @@ else
     private List<string> availableTags = new();
     private List<JournalEntry> allEntries = new();
     private List<JournalEntry> filteredEntries = new();
+    private List<JournalEntry> paginatedEntries = new();
     private string searchTerm = "";
     private string filterMood = "";
     private string filterTag = "";
     private DateTime? startDate = null;
     private DateTime? endDate = null;
+    
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalPages = 1;
+    private int totalFilteredCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,9 +212,10 @@ else
 
     private async Task LoadEntries()
     {
-        allEntries = await journalDb.GetAllEntriesAsync();
+        if (authService.CurrentUser == null) return;
         
-        // Extract all unique tags
+        allEntries = await journalDb.GetAllEntriesAsync(authService.CurrentUser.Id);
+        
         availableTags = allEntries
             .SelectMany(e => (e.Tags ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
             .Select(t => t.Trim().TrimStart('#'))
@@ -178,7 +231,6 @@ else
     {
         filteredEntries = allEntries;
         
-        // Date range filter
         if (startDate.HasValue || endDate.HasValue)
         {
             filteredEntries = filteredEntries.Where(e =>
@@ -190,7 +242,6 @@ else
             }).ToList();
         }
         
-        // Search filter
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             filteredEntries = filteredEntries
@@ -200,7 +251,6 @@ else
                 .ToList();
         }
 
-        // Mood filter
         if (!string.IsNullOrWhiteSpace(filterMood))
         {
             filteredEntries = filteredEntries
@@ -208,13 +258,118 @@ else
                 .ToList();
         }
         
-        // Tag filter
         if (!string.IsNullOrWhiteSpace(filterTag))
         {
             filteredEntries = filteredEntries
                 .Where(e => e.Tags != null && e.Tags.Contains(filterTag, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
+
+        currentPage = 1;
+        ApplyPagination();
+    }
+
+    private void ApplyPagination()
+    {
+        totalFilteredCount = filteredEntries.Count;
+        totalPages = (int)Math.Ceiling((double)totalFilteredCount / pageSize);
+        
+        if (currentPage > totalPages && totalPages > 0)
+        {
+            currentPage = totalPages;
+        }
+        
+        if (totalPages == 0)
+        {
+            paginatedEntries = new List<JournalEntry>();
+        }
+        else
+        {
+            int skip = (currentPage - 1) * pageSize;
+            paginatedEntries = filteredEntries
+                .Skip(skip)
+                .Take(pageSize)
+                .ToList();
+        }
+    }
+
+    private string GetDisplayRange()
+    {
+        if (totalFilteredCount == 0) return "0";
+        int start = (currentPage - 1) * pageSize + 1;
+        int end = Math.Min(currentPage * pageSize, totalFilteredCount);
+        return $"{start}-{end}";
+    }
+
+    private int GetStartPage()
+    {
+        int maxPagesToShow = 5;
+        int half = maxPagesToShow / 2;
+        
+        if (totalPages <= maxPagesToShow)
+            return 1;
+        
+        if (currentPage <= half)
+            return 1;
+        
+        if (currentPage + half >= totalPages)
+            return Math.Max(1, totalPages - maxPagesToShow + 1);
+        
+        return currentPage - half;
+    }
+
+    private int GetEndPage()
+    {
+        int maxPagesToShow = 5;
+        return Math.Min(GetStartPage() + maxPagesToShow - 1, totalPages);
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page >= 1 && page <= totalPages)
+        {
+            currentPage = page;
+            ApplyPagination();
+        }
+    }
+
+    private void GoToFirstPage()
+    {
+        GoToPage(1);
+    }
+
+    private void GoToPreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            GoToPage(currentPage - 1);
+        }
+    }
+
+    private void GoToNextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            GoToPage(currentPage + 1);
+        }
+    }
+
+    private void GoToLastPage()
+    {
+        GoToPage(totalPages);
+    }
+
+    private void OnPageSizeChanged()
+    {
+        currentPage = 1;
+        ApplyPagination();
+        StateHasChanged();
+    }
+
+    private void OnFilterChanged()
+    {
+        ApplyFilters();
+        StateHasChanged();
     }
     
     private void ClearDateFilter()
@@ -222,19 +377,23 @@ else
         startDate = null;
         endDate = null;
         ApplyFilters();
+        StateHasChanged();
     }
 
     private void HandleSearch(ChangeEventArgs e)
     {
         searchTerm = e.Value?.ToString() ?? "";
         ApplyFilters();
+        StateHasChanged();
     }
 
     private async Task DeleteEntry(int entryId)
     {
+        if (authService.CurrentUser == null) return;
+        
         if (await ConfirmDelete())
         {
-            await journalDb.DeleteEntryByIdAsync(entryId);
+            await journalDb.DeleteEntryByIdAsync(entryId, authService.CurrentUser.Id);
             await LoadEntries();
         }
     }
@@ -299,5 +458,4 @@ else
         };
     }
 
-    // Markdown rendering now uses shared MarkdownRenderer service.
 }

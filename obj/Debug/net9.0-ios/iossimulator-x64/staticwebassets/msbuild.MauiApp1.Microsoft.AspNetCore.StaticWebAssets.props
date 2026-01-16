@@ -12,12 +12,12 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>a0hymclr94</Fingerprint>
-      <Integrity>Zt/dMityNx/oNylWTUYgKM/zJvZ5Vk2DZ26QLa1JphY=</Integrity>
+      <Fingerprint>qr74mrjbmy</Fingerprint>
+      <Integrity>VhJfm+eeorRXGeygVZ/zSiybUaP9eBkrEomC9qb6mCw=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>3813</FileLength>
-      <LastWriteTime>Tue, 30 Dec 2025 17:53:42 GMT</LastWriteTime>
+      <FileLength>6574</FileLength>
+      <LastWriteTime>Thu, 15 Jan 2026 16:23:37 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\app.css'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\bootstrap\bootstrap.min.css'))">
@@ -72,12 +72,12 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>pe1cyzqe7n</Fingerprint>
-      <Integrity>33/ZvCDydi6ypv+9QCIJpCBFP/yq5E5NLuGP7J6nv5M=</Integrity>
+      <Fingerprint>0vuim3ia7d</Fingerprint>
+      <Integrity>RDG2g/CmpYbzj9RnhKZxR38haa/GVluO8kCo6o9t5lA=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>3324</FileLength>
-      <LastWriteTime>Fri, 02 Jan 2026 13:42:49 GMT</LastWriteTime>
+      <FileLength>4300</FileLength>
+      <LastWriteTime>Thu, 15 Jan 2026 16:23:39 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauiApp1.styles.css'))">
@@ -92,12 +92,12 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName>ScopedCss</AssetTraitName>
       <AssetTraitValue>ApplicationBundle</AssetTraitValue>
-      <Fingerprint>i8qoghizj0</Fingerprint>
-      <Integrity>0m6V/0sze40Rc5Nu1eAyJERDZWNaEA2gNEPNgb8LlH8=</Integrity>
+      <Fingerprint>vdrmul6tam</Fingerprint>
+      <Integrity>3dkVhCdqlTLBv121/PUzZvc5IzsMx1SSYvAFHVeKAPk=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>35022</FileLength>
-      <LastWriteTime>Fri, 02 Jan 2026 13:42:59 GMT</LastWriteTime>
+      <FileLength>46079</FileLength>
+      <LastWriteTime>Thu, 15 Jan 2026 16:24:25 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauiApp1.styles.css'))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>

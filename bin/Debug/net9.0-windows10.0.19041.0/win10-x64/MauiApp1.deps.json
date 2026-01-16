@@ -14,6 +14,7 @@
           "Microsoft.AspNetCore.Components.WebView.Maui": "9.0.120",
           "Microsoft.Extensions.Logging.Debug": "9.0.8",
           "Microsoft.Maui.Controls": "9.0.120",
+          "QuestPDF": "2024.10.0",
           "sqlite-net-pcl": "1.9.172",
           "Microsoft.Web.WebView2.Core.Projection": "1.0.3179.45",
           "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.19041.57"
@@ -722,6 +723,19 @@
           }
         }
       },
+      "QuestPDF/2024.10.0": {
+        "runtime": {
+          "lib/net8.0/QuestPDF.dll": {
+            "assemblyVersion": "2024.10.0.0",
+            "fileVersion": "2024.10.0.0"
+          }
+        },
+        "native": {
+          "runtimes/win-x64/native/QuestPdfSkia.dll": {
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
       "sqlite-net-pcl/1.9.172": {
         "dependencies": {
           "SQLitePCLRaw.bundle_green": "2.1.2"
@@ -1116,6 +1130,13 @@
       "sha512": "sha512-zeVFVrkFYPkAL1cmXo62D1LVC66VqBiMx+WfZ3aDUmizNECCJewMTk0JwjlgYQcIqxqsK1SjF1CeG74TsokWpQ==",
       "path": "microsoft.windowsappsdk/1.7.250909003",
       "hashPath": "microsoft.windowsappsdk.1.7.250909003.nupkg.sha512"
+    },
+    "QuestPDF/2024.10.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-mROMnm+BX4cBGUeLiR3aq243f9JLD3yAkVh1MbLBWFt/wFt1bb9QjqQtcsHcIQAufOwvhF5+aeu/5akS8J8upQ==",
+      "path": "questpdf/2024.10.0",
+      "hashPath": "questpdf.2024.10.0.nupkg.sha512"
     },
     "sqlite-net-pcl/1.9.172": {
       "type": "package",

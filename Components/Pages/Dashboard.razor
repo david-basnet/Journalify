@@ -1,5 +1,6 @@
-@page "/"
+@page "/dashboard"
 @inject JournalDatabase journalDb
+@inject AuthenticationService authService
 @using MauiApp1.Services
 
 <div class="dashboard-container">
@@ -156,7 +157,7 @@
                                     return $"{x},{y}";
                                 }
                             ));
-                            <polyline points="@points" fill="none" stroke="#667eea" stroke-width="3" />
+                            <polyline points="@points" fill="none" stroke="var(--primary)" stroke-width="3" />
                         }
                     </svg>
                 </div>
@@ -201,12 +202,12 @@
 </div>
 
 @code {
-    private List<MoodCount> moodCounts;
+    private List<MoodCount>? moodCounts;
     private MoodCount? mostFrequentMood;
     private int totalEntries = 0;
-    private List<TagCount> tagCounts;
-    private Dictionary<string, int> tagBreakdown;
-    private List<KeyValuePair<string,int>> wordTrends;
+    private List<TagCount>? tagCounts;
+    private Dictionary<string, int>? tagBreakdown;
+    private List<KeyValuePair<string,int>>? wordTrends;
     private StreakInfo? streakInfo;
     private DateTime lastUpdated;
     private List<JournalEntry> recentEntries = new();
@@ -219,7 +220,6 @@
         _cts = new System.Threading.CancellationTokenSource();
         await LoadStatsAsync();
 
-        // start background periodic refresh every 30 seconds
         _periodicTimer = new System.Threading.PeriodicTimer(TimeSpan.FromSeconds(30));
         _ = Task.Run(async () =>
         {
@@ -241,27 +241,25 @@
 
     private async Task LoadStatsAsync()
     {
-        var entries = await journalDb.GetAllEntriesAsync();
+        if (authService.CurrentUser == null) return;
+        
+        var entries = await journalDb.GetAllEntriesAsync(authService.CurrentUser.Id);
         totalEntries = entries.Count;
 
-        // Mood distribution
         moodCounts = entries
             .GroupBy(e => e.PrimaryMood ?? "Unknown")
             .Select(g => new MoodCount { Mood = g.Key, Count = g.Count() })
             .OrderByDescending(m => m.Count)
             .ToList();
 
-        // Most frequent mood
         mostFrequentMood = moodCounts.FirstOrDefault();
 
-        // Tags
         var tags = entries.SelectMany(e => (e.Tags ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
             .Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t));
 
         tagCounts = tags.GroupBy(t => t).Select(g => new TagCount { Tag = g.Key, Count = g.Count() })
             .OrderByDescending(t => t.Count).Take(8).ToList();
 
-        // Tag breakdown by category
         tagBreakdown = new Dictionary<string, int>();
         foreach (var category in PreBuiltTags.TagsByCategory)
         {
@@ -280,17 +278,13 @@
         }
         tagBreakdown = tagBreakdown.OrderByDescending(kvp => kvp.Value).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        // Word count trends (avg words per month)
         wordTrends = entries
             .GroupBy(e => new DateTime(e.EntryDate.Year, e.EntryDate.Month, 1))
             .OrderBy(g => g.Key)
             .Select(g => new KeyValuePair<string,int>(g.Key.ToString("MMM yyyy"), (int)g.Average(e => (e.Content ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Length)))
             .ToList();
 
-        // Streak info
-        streakInfo = await journalDb.GetStreakInfoAsync();
-
-        // Recent entries (most recent 5)
+        streakInfo = await journalDb.GetStreakInfoAsync(authService.CurrentUser.Id);
         recentEntries = entries.OrderByDescending(e => e.EntryDate).Take(5).ToList();
 
         lastUpdated = DateTime.Now;

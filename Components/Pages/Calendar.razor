@@ -1,55 +1,57 @@
 @page "/calendar"
 @inject JournalDatabase journalDb
 @inject NavigationManager Nav
+@inject AuthenticationService authService
 @using MauiApp1.Services
 
 <PageTitle>Calendar - Journal App</PageTitle>
 
 <h3><i class="fas fa-calendar-alt"></i> Calendar Navigation</h3>
 
-<div class="calendar-container">
-    <!-- Calendar Header -->
-    <div class="calendar-header">
-        <button @onclick="PreviousMonth" class="btn btn-sm btn-outline-primary">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <h4>@currentDate.ToString("MMMM yyyy")</h4>
-        <button @onclick="NextMonth" class="btn btn-sm btn-outline-primary">
-            <i class="fas fa-chevron-right"></i>
-        </button>
+<div class="calendar-layout">
+    <div class="calendar-container">
+        <!-- Calendar Header -->
+        <div class="calendar-header">
+            <button @onclick="PreviousMonth" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <h4>@currentDate.ToString("MMMM yyyy")</h4>
+            <button @onclick="NextMonth" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Day Names -->
+        <div class="calendar-weekdays">
+            <div class="weekday">Sun</div>
+            <div class="weekday">Mon</div>
+            <div class="weekday">Tue</div>
+            <div class="weekday">Wed</div>
+            <div class="weekday">Thu</div>
+            <div class="weekday">Fri</div>
+            <div class="weekday">Sat</div>
+        </div>
+
+        <!-- Calendar Days -->
+        <div class="calendar-days">
+            @foreach (var day in GetCalendarDays())
+            {
+                <div class="calendar-day @(day.IsCurrentMonth ? "" : "other-month") @(day.HasEntry ? "has-entry" : "") @(day.IsSelected ? "selected" : "")"
+                     @onclick="() => SelectDate(day.Date)">
+                    <span class="day-number">@day.Date.Day</span>
+                    @if (day.HasEntry)
+                    {
+                        <div class="entry-indicator">
+                            <i class="fas fa-circle"></i>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
     </div>
 
-    <!-- Day Names -->
-    <div class="calendar-weekdays">
-        <div class="weekday">Sun</div>
-        <div class="weekday">Mon</div>
-        <div class="weekday">Tue</div>
-        <div class="weekday">Wed</div>
-        <div class="weekday">Thu</div>
-        <div class="weekday">Fri</div>
-        <div class="weekday">Sat</div>
-    </div>
-
-    <!-- Calendar Days -->
-    <div class="calendar-days">
-        @foreach (var day in GetCalendarDays())
-        {
-            <div class="calendar-day @(day.IsCurrentMonth ? "" : "other-month") @(day.HasEntry ? "has-entry" : "") @(day.IsSelected ? "selected" : "")"
-                 @onclick="() => SelectDate(day.Date)">
-                <span class="day-number">@day.Date.Day</span>
-                @if (day.HasEntry)
-                {
-                    <div class="entry-indicator">
-                        <i class="fas fa-circle"></i>
-                    </div>
-                }
-            </div>
-        }
-    </div>
-</div>
-
-<!-- Selected Date Entry -->
-<div class="selected-date-section">
+    <!-- Selected Date Entry -->
+    <div class="selected-date-section">
     <h4><i class="fas fa-calendar-check"></i> @selectedDate.ToString("dddd, MMMM dd, yyyy")</h4>
 
     @if (selectedEntry == null)
@@ -122,6 +124,7 @@
             </small>
         </div>
     }
+    </div>
 </div>
 
 @code {
@@ -146,12 +149,16 @@
 
     private async Task LoadAllEntries()
     {
-        allEntries = await journalDb.GetAllEntriesAsync();
+        if (authService.CurrentUser == null) return;
+        
+        allEntries = await journalDb.GetAllEntriesAsync(authService.CurrentUser.Id);
     }
 
     private async Task LoadSelectedEntry()
     {
-        selectedEntry = await journalDb.GetTodayEntryAsync();
+        if (authService.CurrentUser == null) return;
+        
+        selectedEntry = await journalDb.GetTodayEntryAsync(authService.CurrentUser.Id);
         if (selectedEntry == null)
         {
             selectedEntry = allEntries.FirstOrDefault(e => e.EntryDate.Date == selectedDate.Date);
@@ -189,11 +196,12 @@
         currentDate = currentDate.AddMonths(1);
     }
 
-    private async Task SelectDate(DateTime date)
+    private Task SelectDate(DateTime date)
     {
         selectedDate = date;
         selectedEntry = allEntries.FirstOrDefault(e => e.EntryDate.Date == selectedDate.Date);
         StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private void EditEntry(int id)
@@ -203,15 +211,20 @@
 
     private async Task DeleteEntry(int entryId)
     {
+        if (authService.CurrentUser == null) return;
+        
         if (await ConfirmDelete())
         {
-            await journalDb.DeleteEntryByIdAsync(entryId);
+            await journalDb.DeleteEntryByIdAsync(entryId, authService.CurrentUser.Id);
             await LoadAllEntries();
             await LoadSelectedEntry();
         }
     }
 
-    private Task<bool> ConfirmDelete() => Task.FromResult(true);
+    private Task<bool> ConfirmDelete()
+    {
+        return Task.FromResult(true);
+    }
 
     private string GetMoodIcon(string? mood) => (mood ?? string.Empty) switch
     {

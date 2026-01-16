@@ -93,6 +93,10 @@
               "version": "[9.0.11, )",
               "autoReferenced": true
             },
+            "QuestPDF": {
+              "target": "Package",
+              "version": "[2024.10.0, )"
+            },
             "sqlite-net-pcl": {
               "target": "Package",
               "version": "[1.9.172, )"
@@ -109,6 +113,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.Android": {
               "privateAssets": "all"
@@ -148,6 +158,10 @@
               "version": "[9.0.11, )",
               "autoReferenced": true
             },
+            "QuestPDF": {
+              "target": "Package",
+              "version": "[2024.10.0, )"
+            },
             "sqlite-net-pcl": {
               "target": "Package",
               "version": "[1.9.172, )"
@@ -164,6 +178,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.iOS": {
               "privateAssets": "all"
@@ -203,6 +223,10 @@
               "version": "[9.0.11, )",
               "autoReferenced": true
             },
+            "QuestPDF": {
+              "target": "Package",
+              "version": "[2024.10.0, )"
+            },
             "sqlite-net-pcl": {
               "target": "Package",
               "version": "[1.9.172, )"
@@ -220,6 +244,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.MacCatalyst": {
               "privateAssets": "all"
@@ -252,6 +282,10 @@
             "Microsoft.Maui.Controls": {
               "target": "Package",
               "version": "[9.0.120, )"
+            },
+            "QuestPDF": {
+              "target": "Package",
+              "version": "[2024.10.0, )"
             },
             "sqlite-net-pcl": {
               "target": "Package",

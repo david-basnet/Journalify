@@ -29,28 +29,23 @@ namespace MauiApp1.Services
             return SanitizeHtml(html);
         }
 
-        // Basic sanitizer: remove scripts, on* attributes and javascript: links
         public static string SanitizeHtml(string html)
         {
             if (string.IsNullOrEmpty(html)) return string.Empty;
 
-            // Use Ganss.XSS HtmlSanitizer if available
             try
             {
                 var sanitizer = new Ganss.XSS.HtmlSanitizer();
-                // keep common formatting tags
                 sanitizer.AllowedTags.Add("h1");
                 sanitizer.AllowedTags.Add("h2");
                 sanitizer.AllowedTags.Add("h3");
                 sanitizer.AllowedTags.Add("pre");
                 sanitizer.AllowedTags.Add("code");
                 sanitizer.AllowedTags.Add("img");
-                // allow href/src but sanitize javascript: automatically
                 return sanitizer.Sanitize(html);
             }
             catch
             {
-                // fallback to previous basic regex cleaning
                 html = Regex.Replace(html, @"<script[\s\S]*?>[\s\S]*?</script>", "", RegexOptions.IgnoreCase);
                 html = Regex.Replace(html, @"\son\w+\s*=\s*(?:'[^']*'|""[^""]*""|[^>\s]+)", "", RegexOptions.IgnoreCase);
                 html = Regex.Replace(html, @"(href|src)\s*=\s*""javascript:[^""]*""", "", RegexOptions.IgnoreCase);

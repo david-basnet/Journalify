@@ -12,11 +12,9 @@ public class JournalDatabase
         _database.CreateTableAsync<JournalEntry>().Wait();
     }
 
-    // Get database file path
     public string GetDatabasePath() => _dbPath;
 
-    // CREATE
-    public async Task<int> SaveEntryAsync(JournalEntry entry)
+    public async Task<int> SaveEntryAsync(JournalEntry entry, int userId)
     {
         if (string.IsNullOrWhiteSpace(entry.Content))
             throw new ArgumentException("Entry content cannot be empty.");
@@ -24,11 +22,11 @@ public class JournalDatabase
         if (string.IsNullOrWhiteSpace(entry.PrimaryMood))
             throw new ArgumentException("Primary mood is required.");
 
+        entry.UserId = userId;
         entry.CreatedAt = DateTime.Now;
         entry.UpdatedAt = DateTime.Now;
         
-        // Check if entry for today already exists
-        var existingEntry = await GetTodayEntryAsync();
+        var existingEntry = await GetTodayEntryAsync(userId);
         if (existingEntry != null)
         {
             throw new InvalidOperationException("An entry already exists for today. Please update the existing entry instead.");
@@ -37,80 +35,82 @@ public class JournalDatabase
         return await _database.InsertAsync(entry);
     }
 
-    // READ
-    public Task<JournalEntry> GetTodayEntryAsync()
+    public Task<JournalEntry> GetTodayEntryAsync(int userId)
     {
         var today = DateTime.Today;
         return _database.Table<JournalEntry>()
-            .Where(e => e.EntryDate == today)
+            .Where(e => e.EntryDate == today && e.UserId == userId)
             .FirstOrDefaultAsync();
     }
 
-    public Task<JournalEntry> GetEntryByIdAsync(int id)
+    public Task<JournalEntry> GetEntryByIdAsync(int id, int userId)
     {
         return _database.Table<JournalEntry>()
-            .Where(e => e.Id == id)
+            .Where(e => e.Id == id && e.UserId == userId)
             .FirstOrDefaultAsync();
     }
 
-    public Task<List<JournalEntry>> GetEntriesByDateAsync(DateTime date)
+    public Task<List<JournalEntry>> GetEntriesByDateAsync(DateTime date, int userId)
     {
         return _database.Table<JournalEntry>()
-            .Where(e => e.EntryDate == date)
+            .Where(e => e.EntryDate == date && e.UserId == userId)
             .ToListAsync();
     }
 
-    public Task<List<JournalEntry>> GetEntriesByDateRangeAsync(DateTime startDate, DateTime endDate)
+    public Task<List<JournalEntry>> GetEntriesByDateRangeAsync(DateTime startDate, DateTime endDate, int userId)
     {
         return _database.Table<JournalEntry>()
-            .Where(e => e.EntryDate >= startDate && e.EntryDate <= endDate)
+            .Where(e => e.EntryDate >= startDate && e.EntryDate <= endDate && e.UserId == userId)
             .OrderByDescending(e => e.EntryDate)
             .ToListAsync();
     }
 
-    public Task<List<JournalEntry>> GetAllEntriesAsync()
+    public Task<List<JournalEntry>> GetAllEntriesAsync(int userId)
     {
         return _database.Table<JournalEntry>()
+            .Where(e => e.UserId == userId)
             .OrderByDescending(e => e.EntryDate)
             .ToListAsync();
     }
 
-    public Task<List<JournalEntry>> SearchEntriesAsync(string searchTerm)
+    public Task<List<JournalEntry>> SearchEntriesAsync(string searchTerm, int userId)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
-            return GetAllEntriesAsync();
+            return GetAllEntriesAsync(userId);
 
         return _database.Table<JournalEntry>()
-            .Where(e => (e.Content != null && e.Content.Contains(searchTerm)) || 
-                        (e.Category != null && e.Category.Contains(searchTerm)))
+            .Where(e => e.UserId == userId && 
+                       ((e.Content != null && e.Content.Contains(searchTerm)) || 
+                        (e.Category != null && e.Category.Contains(searchTerm))))
             .OrderByDescending(e => e.EntryDate)
             .ToListAsync();
     }
 
-    public Task<List<JournalEntry>> GetEntriesByMoodAsync(string mood)
+    public Task<List<JournalEntry>> GetEntriesByMoodAsync(string mood, int userId)
     {
         return _database.Table<JournalEntry>()
-            .Where(e => e.PrimaryMood == mood || e.SecondaryMood1 == mood || e.SecondaryMood2 == mood)
+            .Where(e => e.UserId == userId && 
+                       (e.PrimaryMood == mood || e.SecondaryMood1 == mood || e.SecondaryMood2 == mood))
             .OrderByDescending(e => e.EntryDate)
             .ToListAsync();
     }
 
-    public Task<List<JournalEntry>> GetEntriesByTagAsync(string tag)
+    public Task<List<JournalEntry>> GetEntriesByTagAsync(string tag, int userId)
     {
         return _database.Table<JournalEntry>()
-            .Where(e => e.Tags != null && e.Tags.Contains(tag))
+            .Where(e => e.UserId == userId && e.Tags != null && e.Tags.Contains(tag))
             .OrderByDescending(e => e.EntryDate)
             .ToListAsync();
     }
 
-    // Get entry count
-    public Task<int> GetEntryCountAsync()
+    public Task<int> GetEntryCountAsync(int userId)
     {
-        return _database.Table<JournalEntry>().CountAsync();
+        return _database.Table<JournalEntry>()
+            .Where(e => e.UserId == userId)
+            .CountAsync();
     }
 
-    // UPDATE
-    public async Task<int> UpdateEntryAsync(JournalEntry entry)
+    public async Task<int> UpdateEntryAsync(JournalEntry entry, int userId)
     {
         if (entry.Id <= 0)
             throw new ArgumentException("Entry ID must be valid.");
@@ -121,25 +121,31 @@ public class JournalDatabase
         if (string.IsNullOrWhiteSpace(entry.PrimaryMood))
             throw new ArgumentException("Primary mood is required.");
 
+        entry.UserId = userId;
         entry.UpdatedAt = DateTime.Now;
         return await _database.UpdateAsync(entry);
     }
 
-    // DELETE
-    public Task<int> DeleteEntryAsync(JournalEntry entry)
+    public async Task<int> DeleteEntryAsync(JournalEntry entry, int userId)
     {
-        return _database.DeleteAsync(entry);
+        if (entry.UserId != userId)
+            throw new UnauthorizedAccessException("You do not have permission to delete this entry.");
+        
+        return await _database.DeleteAsync(entry);
     }
 
-    public Task<int> DeleteEntryByIdAsync(int id)
+    public async Task<int> DeleteEntryByIdAsync(int id, int userId)
     {
-        return _database.DeleteAsync<JournalEntry>(id);
+        var entry = await GetEntryByIdAsync(id, userId);
+        if (entry == null)
+            throw new ArgumentException("Entry not found.");
+        
+        return await _database.DeleteAsync(entry);
     }
 
-    // Get database statistics
-    public async Task<DatabaseStats> GetStatisticsAsync()
+    public async Task<DatabaseStats> GetStatisticsAsync(int userId)
     {
-        var entries = await GetAllEntriesAsync();
+        var entries = await GetAllEntriesAsync(userId);
         var moodCounts = entries
             .GroupBy(e => e.PrimaryMood)
             .Select(g => new MoodCount { Mood = g.Key ?? "Unknown", Count = g.Count() })
@@ -154,10 +160,9 @@ public class JournalDatabase
         };
     }
 
-    // Streak calculations
-    public async Task<StreakInfo> GetStreakInfoAsync()
+    public async Task<StreakInfo> GetStreakInfoAsync(int userId)
     {
-        var entries = await GetAllEntriesAsync();
+        var entries = await GetAllEntriesAsync(userId);
         if (entries.Count == 0)
         {
             return new StreakInfo { CurrentStreak = 0, LongestStreak = 0, MissedDays = new List<DateTime>() };
@@ -165,7 +170,6 @@ public class JournalDatabase
 
         var entryDates = entries.Select(e => e.EntryDate.Date).Distinct().OrderByDescending(d => d).ToList();
         
-        // Calculate current streak
         int currentStreak = 0;
         var today = DateTime.Today;
         var checkDate = today;
@@ -176,7 +180,6 @@ public class JournalDatabase
             checkDate = checkDate.AddDays(-1);
         }
 
-        // Calculate longest streak
         int longestStreak = 0;
         int tempStreak = 0;
         var sortedDates = entryDates.OrderBy(d => d).ToList();
@@ -206,7 +209,6 @@ public class JournalDatabase
             }
         }
 
-        // Calculate missed days (between first entry and today)
         var missedDays = new List<DateTime>();
         if (entryDates.Count > 0)
         {

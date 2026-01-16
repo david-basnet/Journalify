@@ -2,14 +2,96 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    background-color: var(--bg);
+    min-height: 100vh;
+    transition: background-color 0.3s ease;
 }
 
 main[b-w4ahko8s4q] {
     flex: 1;
+    background-color: var(--bg);
+    transition: background-color 0.3s ease;
 }
 
 .sidebar[b-w4ahko8s4q] {
     background-image: linear-gradient(180deg, rgba(102,126,234,0.8) 0%, rgba(118,75,162,0.8) 70%);
+}
+
+.theme-dark .sidebar[b-w4ahko8s4q] {
+    background-image: linear-gradient(180deg, rgba(90,124,232,0.85) 0%, rgba(122,95,184,0.85) 70%);
+}
+
+.top-actions[b-w4ahko8s4q] {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 12px 16px;
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-btn[b-w4ahko8s4q] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 2px solid var(--primary);
+    background: transparent;
+    color: var(--primary);
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover[b-w4ahko8s4q] {
+    background-color: var(--primary);
+    color: var(--surface);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px var(--shadow);
+}
+
+.theme-toggle-btn i[b-w4ahko8s4q] {
+    font-size: 14px;
+}
+
+.user-info[b-w4ahko8s4q] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--surface-elevated);
+    border-radius: 6px;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-info i[b-w4ahko8s4q] {
+    font-size: 18px;
+    color: var(--primary);
+}
+
+.sign-out-btn[b-w4ahko8s4q] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 2px solid var(--danger);
+    background: transparent;
+    color: var(--danger);
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sign-out-btn:hover[b-w4ahko8s4q] {
+    background-color: var(--danger);
+    color: var(--surface);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px var(--shadow);
 }
 
 .top-row[b-w4ahko8s4q] {

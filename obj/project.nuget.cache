@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "2tG7sAqVYoQ=",
+  "dgSpecHash": "rDj4wn7AvZM=",
   "success": true,
   "projectFilePath": "E:\\year 3\\AD\\CW\\MauiApp1\\MauiApp1.csproj",
   "expectedPackageFiles": [
@@ -51,6 +51,7 @@
     "C:\\Users\\david\\.nuget\\packages\\microsoft.web.webview2\\1.0.3179.45\\microsoft.web.webview2.1.0.3179.45.nupkg.sha512",
     "C:\\Users\\david\\.nuget\\packages\\microsoft.windows.sdk.buildtools\\10.0.22621.756\\microsoft.windows.sdk.buildtools.10.0.22621.756.nupkg.sha512",
     "C:\\Users\\david\\.nuget\\packages\\microsoft.windowsappsdk\\1.7.250909003\\microsoft.windowsappsdk.1.7.250909003.nupkg.sha512",
+    "C:\\Users\\david\\.nuget\\packages\\questpdf\\2024.10.0\\questpdf.2024.10.0.nupkg.sha512",
     "C:\\Users\\david\\.nuget\\packages\\sqlite-net-pcl\\1.9.172\\sqlite-net-pcl.1.9.172.nupkg.sha512",
     "C:\\Users\\david\\.nuget\\packages\\sqlitepclraw.bundle_green\\2.1.2\\sqlitepclraw.bundle_green.2.1.2.nupkg.sha512",
     "C:\\Users\\david\\.nuget\\packages\\sqlitepclraw.core\\2.1.2\\sqlitepclraw.core.2.1.2.nupkg.sha512",
@@ -152,6 +153,9 @@
     "C:\\Users\\david\\.nuget\\packages\\xamarin.kotlinx.coroutines.core.jvm\\1.9.0.3\\xamarin.kotlinx.coroutines.core.jvm.1.9.0.3.nupkg.sha512",
     "C:\\Users\\david\\.nuget\\packages\\xamarin.kotlinx.serialization.core\\1.7.3.4\\xamarin.kotlinx.serialization.core.1.7.3.4.nupkg.sha512",
     "C:\\Users\\david\\.nuget\\packages\\xamarin.kotlinx.serialization.core.jvm\\1.7.3.4\\xamarin.kotlinx.serialization.core.jvm.1.7.3.4.nupkg.sha512",
+    "C:\\Users\\david\\.nuget\\packages\\microsoft.netcore.app.ref\\9.0.12\\microsoft.netcore.app.ref.9.0.12.nupkg.sha512",
+    "C:\\Users\\david\\.nuget\\packages\\microsoft.netcore.app.ref\\9.0.12\\microsoft.netcore.app.ref.9.0.12.nupkg.sha512",
+    "C:\\Users\\david\\.nuget\\packages\\microsoft.netcore.app.ref\\9.0.12\\microsoft.netcore.app.ref.9.0.12.nupkg.sha512",
     "C:\\Users\\david\\.nuget\\packages\\microsoft.windows.sdk.net.ref\\10.0.19041.57\\microsoft.windows.sdk.net.ref.10.0.19041.57.nupkg.sha512"
   ],
   "logs": [

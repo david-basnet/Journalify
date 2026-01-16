@@ -1,0 +1,239 @@
+@page "/pdf-export"
+@inject JournalDatabase journalDb
+@inject AuthenticationService authService
+@inject PdfExportService pdfService
+@using MauiApp1.Services
+@using System.IO
+
+<PageTitle>PDF Export</PageTitle>
+
+<div class="pdf-export-container">
+    <h1><i class="fas fa-file-pdf"></i> Export Journal to PDF</h1>
+    <p class="lead">Export your journal entries to a PDF file for backup or sharing.</p>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-circle"></i> @errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success" role="alert">
+            <i class="fas fa-check-circle"></i> @successMessage
+        </div>
+    }
+
+    <div class="export-options-card">
+        <h3><i class="fas fa-cog"></i> Export Options</h3>
+
+        <div class="form-group">
+            <label for="exportRange">Export Range:</label>
+            <select id="exportRange" @bind="exportRange" @bind:after="OnRangeChanged" class="form-control">
+                <option value="all">All Entries</option>
+                <option value="dateRange">Date Range</option>
+                <option value="last30">Last 30 Days</option>
+                <option value="last90">Last 90 Days</option>
+                <option value="thisYear">This Year</option>
+            </select>
+        </div>
+
+        @if (exportRange == "dateRange")
+        {
+            <div class="form-group">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" @bind="startDate" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" @bind="endDate" class="form-control" />
+            </div>
+        }
+
+        <div class="form-group">
+            <label for="exportLocation">Export Location:</label>
+            <div class="input-group">
+                <input type="text" id="exportLocation" @bind="exportPath" class="form-control" readonly />
+                <button class="btn btn-secondary" @onclick="SelectExportLocation">
+                    <i class="fas fa-folder-open"></i> Browse
+                </button>
+            </div>
+            <small class="form-text text-muted">Default: Documents\JournalApp\Exports</small>
+        </div>
+
+        <div class="export-info">
+            <p><strong>Entries to export:</strong> <span id="entryCount">@(entriesToExport?.Count ?? 0)</span></p>
+        </div>
+
+        <button class="btn btn-primary btn-export" @onclick="ExportToPdf" disabled="@(isExporting || (entriesToExport?.Count ?? 0) == 0)">
+            @if (isExporting)
+            {
+                <span><i class="fas fa-spinner fa-spin"></i> Exporting...</span>
+            }
+            else
+            {
+                <span><i class="fas fa-file-pdf"></i> Export to PDF</span>
+            }
+        </button>
+    </div>
+
+    @if (entriesToExport != null && entriesToExport.Count > 0)
+    {
+        <div class="preview-card">
+            <h3><i class="fas fa-list"></i> Preview (First 5 Entries)</h3>
+            <div class="preview-list">
+                @foreach (var entry in entriesToExport.Take(5))
+                {
+                    <div class="preview-item">
+                        <div class="preview-date">@entry.EntryDate.ToString("MMM dd, yyyy")</div>
+                        <div class="preview-content">@(entry.Content?.Length > 100 ? entry.Content.Substring(0, 100) + "..." : entry.Content)</div>
+                        @if (!string.IsNullOrEmpty(entry.PrimaryMood))
+                        {
+                            <div class="preview-mood">
+                                <span class="mood-badge">@entry.PrimaryMood</span>
+                            </div>
+                        }
+                    </div>
+                }
+                @if (entriesToExport.Count > 5)
+                {
+                    <div class="preview-more">... and @(entriesToExport.Count - 5) more entries</div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string exportRange = "all";
+    private DateTime startDate = DateTime.Today.AddDays(-30);
+    private DateTime endDate = DateTime.Today;
+    private string exportPath = "";
+    private List<JournalEntry>? entriesToExport;
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isExporting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authService.CurrentUser == null) return;
+        
+        SetDefaultExportPath();
+        await LoadEntriesAsync();
+    }
+
+    private void SetDefaultExportPath()
+    {
+        var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        var exportFolder = Path.Combine(documentsPath, "JournalApp", "Exports");
+        if (!Directory.Exists(exportFolder))
+        {
+            Directory.CreateDirectory(exportFolder);
+        }
+        var fileName = $"Journal_Export_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+        exportPath = Path.Combine(exportFolder, fileName);
+    }
+
+    private async Task OnRangeChanged()
+    {
+        await LoadEntriesAsync();
+    }
+
+    private async Task LoadEntriesAsync()
+    {
+        if (authService.CurrentUser == null) return;
+
+        try
+        {
+            errorMessage = null;
+            List<JournalEntry> entries;
+
+            switch (exportRange)
+            {
+                case "all":
+                    entries = await journalDb.GetAllEntriesAsync(authService.CurrentUser.Id);
+                    break;
+                case "dateRange":
+                    entries = await journalDb.GetEntriesByDateRangeAsync(
+                        startDate.Date,
+                        endDate.Date,
+                        authService.CurrentUser.Id
+                    );
+                    break;
+                case "last30":
+                    entries = await journalDb.GetEntriesByDateRangeAsync(
+                        DateTime.Today.AddDays(-30),
+                        DateTime.Today,
+                        authService.CurrentUser.Id
+                    );
+                    break;
+                case "last90":
+                    entries = await journalDb.GetEntriesByDateRangeAsync(
+                        DateTime.Today.AddDays(-90),
+                        DateTime.Today,
+                        authService.CurrentUser.Id
+                    );
+                    break;
+                case "thisYear":
+                    var yearStart = new DateTime(DateTime.Today.Year, 1, 1);
+                    entries = await journalDb.GetEntriesByDateRangeAsync(
+                        yearStart,
+                        DateTime.Today,
+                        authService.CurrentUser.Id
+                    );
+                    break;
+                default:
+                    entries = new List<JournalEntry>();
+                    break;
+            }
+
+            entriesToExport = entries.OrderByDescending(e => e.EntryDate).ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading entries: {ex.Message}";
+            entriesToExport = new List<JournalEntry>();
+        }
+    }
+
+    private async Task SelectExportLocation()
+    {
+        SetDefaultExportPath();
+        await Task.CompletedTask;
+    }
+
+    private async Task ExportToPdf()
+    {
+        if (authService.CurrentUser == null || entriesToExport == null || entriesToExport.Count == 0)
+        {
+            errorMessage = "No entries to export.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(exportPath))
+        {
+            errorMessage = "Please select an export location.";
+            return;
+        }
+
+        isExporting = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            await pdfService.ExportEntriesToPdfAsync(entriesToExport, exportPath);
+            successMessage = $"PDF exported successfully to:\n{exportPath}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error exporting PDF: {ex.Message}";
+        }
+        finally
+        {
+            isExporting = false;
+        }
+    }
+}
+
