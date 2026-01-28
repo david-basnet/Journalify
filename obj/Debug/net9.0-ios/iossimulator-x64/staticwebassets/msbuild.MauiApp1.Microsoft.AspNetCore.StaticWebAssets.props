@@ -12,12 +12,12 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>qr74mrjbmy</Fingerprint>
-      <Integrity>VhJfm+eeorRXGeygVZ/zSiybUaP9eBkrEomC9qb6mCw=</Integrity>
+      <Fingerprint>9ls69o0uiq</Fingerprint>
+      <Integrity>PV8gN9YNLFZgljnYx9ryX1T/oJNoTE6h+KVnUB5m/HQ=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>6574</FileLength>
-      <LastWriteTime>Thu, 15 Jan 2026 16:23:37 GMT</LastWriteTime>
+      <FileLength>6578</FileLength>
+      <LastWriteTime>Fri, 16 Jan 2026 16:10:00 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\app.css'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\bootstrap\bootstrap.min.css'))">
@@ -77,7 +77,7 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <FileLength>4300</FileLength>
-      <LastWriteTime>Thu, 15 Jan 2026 16:23:39 GMT</LastWriteTime>
+      <LastWriteTime>Fri, 16 Jan 2026 16:17:34 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauiApp1.styles.css'))">
@@ -92,12 +92,12 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName>ScopedCss</AssetTraitName>
       <AssetTraitValue>ApplicationBundle</AssetTraitValue>
-      <Fingerprint>vdrmul6tam</Fingerprint>
-      <Integrity>3dkVhCdqlTLBv121/PUzZvc5IzsMx1SSYvAFHVeKAPk=</Integrity>
+      <Fingerprint>tcxvjr0rty</Fingerprint>
+      <Integrity>nbmy8UU3FdgL5nuj95lfpevi3hwMDxcWq6N5FoyadHY=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>46079</FileLength>
-      <LastWriteTime>Thu, 15 Jan 2026 16:24:25 GMT</LastWriteTime>
+      <FileLength>58439</FileLength>
+      <LastWriteTime>Sun, 25 Jan 2026 13:12:17 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MauiApp1.styles.css'))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>

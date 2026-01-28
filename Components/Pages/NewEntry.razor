@@ -4,7 +4,6 @@
 @inject JournalDatabase journalDb
 @inject NavigationManager Nav
 @inject IJSRuntime js
-@inject AuthenticationService authService
 
 <h3><i class="fas fa-pen-nib"></i> New Journal Entry</h3>
 
@@ -169,8 +168,26 @@
     {
         <button @onclick="SaveEntry" class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Save Entry</button>
     }
-    <button @onclick="ClearForm" class="btn btn-outline-secondary"><i class="fas fa-eraser"></i> Clear</button>
+    <button @onclick="ConfirmClear" class="btn btn-outline-secondary"><i class="fas fa-eraser"></i> Clear</button>
 </div>
+
+@if (showClearConfirmation)
+{
+    <div class="confirmation-dialog-overlay">
+        <div class="confirmation-dialog">
+            <h4><i class="fas fa-exclamation-triangle"></i> Confirm Clear</h4>
+            <p>Are you sure you want to clear all form data? This action cannot be undone.</p>
+            <div class="button-group">
+                <button @onclick="ConfirmClearAction" class="btn btn-danger">
+                    <i class="fas fa-check"></i> Yes, Clear
+                </button>
+                <button @onclick="CancelClear" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     [Parameter]
@@ -189,6 +206,7 @@
     private string successMessage = "";
     private bool isEditing = false;
     private int currentEntryId = 0;
+    private bool showClearConfirmation = false;
 
     private List<string> allMoods = new();
     private bool isMarkdown = false;
@@ -237,9 +255,9 @@
         allMoods.AddRange(MoodCategories.NegativeMoods);
         allMoods.Sort();
 
-        if (entryId.HasValue && authService.CurrentUser != null)
+        if (entryId.HasValue)
         {
-            var entry = await journalDb.GetEntryByIdAsync(entryId.Value, authService.CurrentUser.Id);
+            var entry = await journalDb.GetEntryByIdAsync(entryId.Value);
             if (entry != null)
             {
                 await LoadEntryForEdit(entry);
@@ -249,9 +267,9 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (entryId.HasValue && authService.CurrentUser != null)
+        if (entryId.HasValue)
         {
-            var e = await journalDb.GetEntryByIdAsync(entryId.Value, authService.CurrentUser.Id);
+            var e = await journalDb.GetEntryByIdAsync(entryId.Value);
             if (e != null)
             {
                 await LoadEntryForEdit(e);
@@ -355,6 +373,22 @@
         Nav.NavigateTo("/entries");
     }
 
+    private void ConfirmClear()
+    {
+        showClearConfirmation = true;
+    }
+
+    private void ConfirmClearAction()
+    {
+        ClearForm();
+        showClearConfirmation = false;
+    }
+
+    private void CancelClear()
+    {
+        showClearConfirmation = false;
+    }
+
     private void ClearForm()
     {
         content = "";
@@ -413,13 +447,7 @@
 
         try
         {
-            if (authService.CurrentUser == null)
-            {
-                errorMessage = "❌ You must be signed in to save entries.";
-                return;
-            }
-
-            await journalDb.SaveEntryAsync(entry, authService.CurrentUser.Id);
+            await journalDb.SaveEntryAsync(entry);
             successMessage = "✅ Entry saved successfully! Redirecting...";
             await Task.Delay(1500);
             ClearForm();
@@ -474,13 +502,7 @@
 
         try
         {
-            if (authService.CurrentUser == null)
-            {
-                errorMessage = "❌ You must be signed in to update entries.";
-                return;
-            }
-
-            await journalDb.UpdateEntryAsync(entry, authService.CurrentUser.Id);
+            await journalDb.UpdateEntryAsync(entry);
             successMessage = "✅ Entry updated successfully! Redirecting...";
             await Task.Delay(1500);
             ClearForm();

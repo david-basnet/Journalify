@@ -1,6 +1,6 @@
+@page "/"
 @page "/dashboard"
 @inject JournalDatabase journalDb
-@inject AuthenticationService authService
 @using MauiApp1.Services
 
 <div class="dashboard-container">
@@ -241,9 +241,7 @@
 
     private async Task LoadStatsAsync()
     {
-        if (authService.CurrentUser == null) return;
-        
-        var entries = await journalDb.GetAllEntriesAsync(authService.CurrentUser.Id);
+        var entries = await journalDb.GetAllEntriesAsync();
         totalEntries = entries.Count;
 
         moodCounts = entries
@@ -284,7 +282,7 @@
             .Select(g => new KeyValuePair<string,int>(g.Key.ToString("MMM yyyy"), (int)g.Average(e => (e.Content ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Length)))
             .ToList();
 
-        streakInfo = await journalDb.GetStreakInfoAsync(authService.CurrentUser.Id);
+        streakInfo = await journalDb.GetStreakInfoAsync();
         recentEntries = entries.OrderByDescending(e => e.EntryDate).Take(5).ToList();
 
         lastUpdated = DateTime.Now;

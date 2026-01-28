@@ -1,9 +1,57 @@
 @page "/entries"
 @inject JournalDatabase journalDb
 @inject NavigationManager Nav
-@inject AuthenticationService authService
+@inject PinService pinService
 @using MauiApp1.Services
 
+@if (!isPinVerified)
+{
+    <div class="pin-dialog-overlay">
+        <div class="pin-dialog">
+            <h4><i class="fas fa-lock"></i> @(pinService.IsPinSet() ? "Enter PIN" : "Create PIN")</h4>
+            
+            @if (!string.IsNullOrEmpty(pinError))
+            {
+                <div class="alert alert-danger">@pinError</div>
+            }
+            
+            @if (!pinService.IsPinSet())
+            {
+                <div class="form-group">
+                    <label>Create PIN (minimum 4 digits):</label>
+                    <input type="password" @bind="pinInput" @bind:event="oninput" class="form-control" placeholder="Enter PIN" maxlength="10" />
+                </div>
+                <div class="form-group">
+                    <label>Confirm PIN:</label>
+                    <input type="password" @bind="pinConfirm" @bind:event="oninput" class="form-control" placeholder="Confirm PIN" maxlength="10" />
+                </div>
+                <div class="button-group">
+                    <button @onclick="CreatePin" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Create PIN
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>Enter PIN:</label>
+                    <input type="password" @bind="pinInput" @bind:event="oninput" @onkeypress="OnPinKeyPress" class="form-control" placeholder="Enter PIN" maxlength="10" autofocus />
+                </div>
+                <div class="button-group">
+                    <button @onclick="VerifyPin" class="btn btn-primary">
+                        <i class="fas fa-unlock"></i> Enter
+                    </button>
+                    <button @onclick="ForgetPin" class="btn btn-outline-danger">
+                        <i class="fas fa-key"></i> Forget PIN
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (isPinVerified)
+{
 <h4><i class="fas fa-list"></i> All Entries</h4>
 
 <div class="search-filter-group">
@@ -182,8 +230,14 @@ else
         </div>
     }
 }
+}
 
 @code {
+    private bool isPinVerified = false;
+    private string pinInput = "";
+    private string pinConfirm = "";
+    private string pinError = "";
+
     private List<string> allMoods = new();
     private List<string> availableTags = new();
     private List<JournalEntry> allEntries = new();
@@ -207,14 +261,100 @@ else
         allMoods.AddRange(MoodCategories.NegativeMoods);
         allMoods.Sort();
 
-        await LoadEntries();
+        // Check if PIN is already verified (session)
+        if (pinService.IsPinSet())
+        {
+            // PIN is set, need to verify
+            isPinVerified = false;
+        }
+        else
+        {
+            // No PIN set yet, will show create PIN dialog
+            isPinVerified = false;
+        }
+    }
+
+    private void OnPinKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            VerifyPin();
+        }
+    }
+
+    private void CreatePin()
+    {
+        pinError = "";
+        
+        if (string.IsNullOrWhiteSpace(pinInput))
+        {
+            pinError = "PIN cannot be empty.";
+            return;
+        }
+
+        if (pinInput.Length < 4)
+        {
+            pinError = "PIN must be at least 4 characters long.";
+            return;
+        }
+
+        if (pinInput != pinConfirm)
+        {
+            pinError = "PINs do not match. Please try again.";
+            return;
+        }
+
+        if (pinService.CreatePin(pinInput, pinConfirm))
+        {
+            isPinVerified = true;
+            pinInput = "";
+            pinConfirm = "";
+            pinError = "";
+            LoadEntries();
+        }
+        else
+        {
+            pinError = "Failed to create PIN. Please try again.";
+        }
+    }
+
+    private void VerifyPin()
+    {
+        pinError = "";
+        
+        if (string.IsNullOrWhiteSpace(pinInput))
+        {
+            pinError = "Please enter your PIN.";
+            return;
+        }
+
+        if (pinService.VerifyPin(pinInput))
+        {
+            isPinVerified = true;
+            pinInput = "";
+            pinError = "";
+            LoadEntries();
+        }
+        else
+        {
+            pinError = "Incorrect PIN. Please try again.";
+            pinInput = "";
+        }
+    }
+
+    private void ForgetPin()
+    {
+        pinService.ResetPin();
+        isPinVerified = false;
+        pinInput = "";
+        pinConfirm = "";
+        pinError = "";
+        StateHasChanged();
     }
 
     private async Task LoadEntries()
     {
-        if (authService.CurrentUser == null) return;
-        
-        allEntries = await journalDb.GetAllEntriesAsync(authService.CurrentUser.Id);
+        allEntries = await journalDb.GetAllEntriesAsync();
         
         availableTags = allEntries
             .SelectMany(e => (e.Tags ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
@@ -389,11 +529,9 @@ else
 
     private async Task DeleteEntry(int entryId)
     {
-        if (authService.CurrentUser == null) return;
-        
         if (await ConfirmDelete())
         {
-            await journalDb.DeleteEntryByIdAsync(entryId, authService.CurrentUser.Id);
+            await journalDb.DeleteEntryByIdAsync(entryId);
             await LoadEntries();
         }
     }

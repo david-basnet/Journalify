@@ -1,6 +1,5 @@
 @page "/pdf-export"
 @inject JournalDatabase journalDb
-@inject AuthenticationService authService
 @inject PdfExportService pdfService
 @using MauiApp1.Services
 @using System.IO
@@ -117,8 +116,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (authService.CurrentUser == null) return;
-        
         SetDefaultExportPath();
         await LoadEntriesAsync();
     }
@@ -142,8 +139,6 @@
 
     private async Task LoadEntriesAsync()
     {
-        if (authService.CurrentUser == null) return;
-
         try
         {
             errorMessage = null;
@@ -152,35 +147,31 @@
             switch (exportRange)
             {
                 case "all":
-                    entries = await journalDb.GetAllEntriesAsync(authService.CurrentUser.Id);
+                    entries = await journalDb.GetAllEntriesAsync();
                     break;
                 case "dateRange":
                     entries = await journalDb.GetEntriesByDateRangeAsync(
                         startDate.Date,
-                        endDate.Date,
-                        authService.CurrentUser.Id
+                        endDate.Date
                     );
                     break;
                 case "last30":
                     entries = await journalDb.GetEntriesByDateRangeAsync(
                         DateTime.Today.AddDays(-30),
-                        DateTime.Today,
-                        authService.CurrentUser.Id
+                        DateTime.Today
                     );
                     break;
                 case "last90":
                     entries = await journalDb.GetEntriesByDateRangeAsync(
                         DateTime.Today.AddDays(-90),
-                        DateTime.Today,
-                        authService.CurrentUser.Id
+                        DateTime.Today
                     );
                     break;
                 case "thisYear":
                     var yearStart = new DateTime(DateTime.Today.Year, 1, 1);
                     entries = await journalDb.GetEntriesByDateRangeAsync(
                         yearStart,
-                        DateTime.Today,
-                        authService.CurrentUser.Id
+                        DateTime.Today
                     );
                     break;
                 default:
@@ -205,7 +196,7 @@
 
     private async Task ExportToPdf()
     {
-        if (authService.CurrentUser == null || entriesToExport == null || entriesToExport.Count == 0)
+        if (entriesToExport == null || entriesToExport.Count == 0)
         {
             errorMessage = "No entries to export.";
             return;

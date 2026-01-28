@@ -1,7 +1,6 @@
 @page "/calendar"
 @inject JournalDatabase journalDb
 @inject NavigationManager Nav
-@inject AuthenticationService authService
 @using MauiApp1.Services
 
 <PageTitle>Calendar - Journal App</PageTitle>
@@ -149,16 +148,12 @@
 
     private async Task LoadAllEntries()
     {
-        if (authService.CurrentUser == null) return;
-        
-        allEntries = await journalDb.GetAllEntriesAsync(authService.CurrentUser.Id);
+        allEntries = await journalDb.GetAllEntriesAsync();
     }
 
     private async Task LoadSelectedEntry()
     {
-        if (authService.CurrentUser == null) return;
-        
-        selectedEntry = await journalDb.GetTodayEntryAsync(authService.CurrentUser.Id);
+        selectedEntry = await journalDb.GetTodayEntryAsync();
         if (selectedEntry == null)
         {
             selectedEntry = allEntries.FirstOrDefault(e => e.EntryDate.Date == selectedDate.Date);
@@ -211,11 +206,9 @@
 
     private async Task DeleteEntry(int entryId)
     {
-        if (authService.CurrentUser == null) return;
-        
         if (await ConfirmDelete())
         {
-            await journalDb.DeleteEntryByIdAsync(entryId, authService.CurrentUser.Id);
+            await journalDb.DeleteEntryByIdAsync(entryId);
             await LoadAllEntries();
             await LoadSelectedEntry();
         }

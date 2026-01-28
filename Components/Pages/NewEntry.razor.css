@@ -512,6 +512,98 @@ textarea.form-control {
     font-weight: 500;
 }
 
+/* Confirmation Dialog */
+.confirmation-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.confirmation-dialog {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.confirmation-dialog h4 {
+    margin: 0 0 16px 0;
+    color: var(--danger);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.confirmation-dialog h4 i {
+    font-size: 24px;
+}
+
+.confirmation-dialog p {
+    margin: 0 0 24px 0;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.confirmation-dialog .button-group {
+    display: flex;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    grid-template-columns: 1fr 1fr;
+}
+
+.confirmation-dialog .btn {
+    flex: 1;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.confirmation-dialog .btn-danger {
+    background-color: #dc3545;
+    color: var(--surface);
+    border: none;
+}
+
+.confirmation-dialog .btn-danger:hover {
+    background-color: #c82333;
+}
+
+.confirmation-dialog .btn-secondary {
+    background-color: #6c757d;
+    color: var(--surface);
+}
+
+.confirmation-dialog .btn-secondary:hover {
+    background-color: #5a6268;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .button-group {
@@ -533,5 +625,18 @@ textarea.form-control {
     .tag-button {
         font-size: 12px;
         padding: 5px 10px;
+    }
+
+    .confirmation-dialog {
+        padding: 24px;
+        width: 95%;
+    }
+
+    .confirmation-dialog .button-group {
+        flex-direction: column;
+    }
+
+    .confirmation-dialog .btn {
+        width: 100%;
     }
 }

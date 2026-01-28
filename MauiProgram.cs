@@ -33,11 +33,7 @@ public static class MauiProgram
             return new JournalDatabase(dbPath);
         });
 
-        builder.Services.AddScoped<AuthenticationService>(s =>
-        {
-            var journalDb = s.GetRequiredService<JournalDatabase>();
-            return new AuthenticationService(journalDb);
-        });
+        builder.Services.AddSingleton<PinService>();
 
         builder.Services.AddScoped<PdfExportService>();
 

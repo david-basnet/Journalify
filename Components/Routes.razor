@@ -1,23 +1,12 @@
 ﻿<Router AppAssembly="@typeof(MauiProgram).Assembly">
     <Found Context="routeData">
-        @if (routeData.PageType == typeof(Pages.Login))
-        {
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
-        }
-        else
-        {
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.AuthLayout)" />
-        }
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
         <PageTitle>Not found</PageTitle>
-        <LayoutView>
-            <LayoutView.ChildContent>
-                <MainLayout>
-                    <p role="alert">Sorry, there's nothing at this address.</p>
-                </MainLayout>
-            </LayoutView.ChildContent>
+        <LayoutView LayoutType="@typeof(Layout.MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
         </LayoutView>
     </NotFound>
 </Router>
